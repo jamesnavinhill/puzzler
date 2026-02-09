@@ -1,0 +1,5 @@
+{
+  "name": "PuzzleMaster",
+  "description": "A premium web-based jigsaw puzzle application allowing users to turn any image into a playable puzzle with customizable difficulty and themes.",
+  "requestFramePermissions": []
+}
