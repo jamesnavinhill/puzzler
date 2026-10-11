@@ -11,6 +11,7 @@ const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('home');
   const [image, setImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [completionPercent, setCompletionPercent] = useState(0);
 
@@ -77,7 +78,7 @@ const App: React.FC = () => {
       };
 
       img.onerror = () => {
-        alert('Failed to load image data.');
+        setError('Failed to load image data.');
         setIsProcessing(false);
       };
 
@@ -85,7 +86,7 @@ const App: React.FC = () => {
     };
 
     reader.onerror = () => {
-      alert('Error reading file.');
+      setError('Error reading file.');
       setIsProcessing(false);
     };
 
@@ -93,17 +94,57 @@ const App: React.FC = () => {
   };
 
   const handleImageSelect = (file: File) => {
+    setError(null);
     processImage(file);
   };
 
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const generateAiImage = async () => {
+    const prompt = aiPrompt.trim();
+    if (!prompt || isGenerating) return;
+    setError(null);
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.imageB64) {
+        throw new Error(data.error || `Generation failed (${res.status}).`);
+      }
+      processGeneratedImage(data.imageB64);
+      setAiPrompt('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'AI generation failed.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const processGeneratedImage = (b64: string) => {
+    const dataUrl = `data:image/jpeg;base64,${b64}`;
+    const img = new Image();
+    img.onload = () => {
+      setImage(dataUrl);
+      setGameState('setup');
+    };
+    img.onerror = () => setError('Generated image could not be loaded.');
+    img.src = dataUrl;
+  };
+
   const loadDemoImage = () => {
+    setError(null);
     setIsProcessing(true);
     setCompletionPercent(0);
 
     const demoImage = new Image();
     demoImage.crossOrigin = 'Anonymous';
     const src =
-      'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80';
+      '/images/demo-landscape.jpg';
 
     demoImage.src = src;
     demoImage.onload = () => {
@@ -113,7 +154,7 @@ const App: React.FC = () => {
     };
 
     demoImage.onerror = () => {
-      alert('Failed to load demo image.');
+      setError('Failed to load demo image.');
       setIsProcessing(false);
     };
   };
@@ -219,6 +260,19 @@ const App: React.FC = () => {
       </header>
 
       <main className="flex-1 flex flex-col overflow-hidden relative z-0">
+        {error && gameState !== 'playing' && (
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-red-500/10 border border-red-500/40 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl text-sm shadow-lg">
+            <span>{error}</span>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-500/70 hover:text-red-500"
+              aria-label="Dismiss error"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {gameState === 'home' && (
           <div className="flex-1 flex flex-col items-center justify-center p-6 animate-fade-in">
             <div className="max-w-2xl text-center mb-8">
@@ -249,6 +303,27 @@ const App: React.FC = () => {
                   >
                     Use Demo Landscape Photo
                   </button>
+                </div>
+
+                <div className="mt-4 w-full max-w-md mx-auto">
+                  <div className="flex gap-2">
+                    <input
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') generateAiImage();
+                      }}
+                      placeholder="Describe a puzzle image… (AI)"
+                      className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))]/40"
+                    />
+                    <button
+                      onClick={generateAiImage}
+                      disabled={!aiPrompt.trim() || isGenerating}
+                      className="rounded-lg bg-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {isGenerating ? 'Generating…' : 'Generate'}
+                    </button>
+                  </div>
                 </div>
               </>
             )}

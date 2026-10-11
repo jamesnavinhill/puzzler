@@ -1,18 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AudioTrack } from '../types';
 
+// Local asset (Pixabay Content License) — hotlinked CDN URLs proved unstable.
 const DEMO_TRACKS: AudioTrack[] = [
   {
     id: '1',
-    title: 'Focus Flow',
+    title: 'Lofi Study',
     artist: 'PuzzleMaster',
-    src: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3', 
-  },
-  {
-    id: '2',
-    title: 'Calm Waves',
-    artist: 'Nature Sounds',
-    src: 'https://cdn.pixabay.com/download/audio/2022/02/07/audio_659020473e.mp3?filename=ambient-piano-amp-drone-10526.mp3',
+    src: '/audio/lofi-study.mp3',
   },
 ];
 

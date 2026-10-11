@@ -1,56 +1,51 @@
-# PuzzleMaster
+# Puzzler
 
-A React + Vite jigsaw puzzle app that turns any image into an interactive puzzle board.
+A web-based jigsaw puzzle game: drop in any photo (or generate one with AI),
+choose 25/100/250 pieces, and play with drag, snap, zoom, and pan on canvas.
+
+Live at https://puzzler.vercel.app
 
 ## Features
 
-- Upload your own image or use a demo image
-- Easy / Medium / Hard difficulty presets
-- Drag-to-place puzzle pieces with snap detection
-- Mouse wheel zoom and drag-to-pan on the canvas
-- Header progress bar that fills with completion percentage
-- Built-in audio player
-- Theme controls with dark mode + accent hue customization
+- **Custom images** — upload a photo (client-side downscale to 1600px) or use the demo landscape
+- **AI image generation** — describe a puzzle ("a colorful mosaic tile pattern") and the
+  serverless function generates it via the Agency gateway's free image models
+- **Jigsaw engine** — bezier tab/slot piece generation, snap detection, zoom/pan
+- **Ambient audio** — local lofi track (Pixabay Content License), volume control
+- **Theme customizer** — hue/saturation accent + dark/light mode (CSS variables)
 
-## Project Structure
+## Stack
 
-```text
-src/
-  App.tsx
-  main.tsx
-  components/
-    AudioPlayer.tsx
-    FileUpload.tsx
-    PuzzleCanvas.tsx
-    ThemeCustomizer.tsx
-  types/
-    index.ts
-  utils/
-    puzzleGenerator.ts
-```
+- Vite 8 + React 19 + TypeScript
+- Tailwind CSS 4 (`@tailwindcss/vite` — dark mode keyed to the app's `.dark-mode` class)
+- Vercel serverless function (`api/generate.ts`) for AI image generation
 
-## Local Setup
+## AI — Agency gateway
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
-3. Open the local URL shown in the terminal (default: `http://localhost:3000`).
+`POST /api/generate` `{ prompt }` → `{ imageB64 }`. The gateway key stays
+server-side; requests carry an `x-agency-surface: puzzler` header. Image model
+is env-configurable via `YRKA_IMAGE_MODEL` (default `cf-img-flux-1-schnell`,
+a cheap/effective free-tier model).
 
-## Build
+## Environment
 
-Create a production build:
+Copy `.env.example` to `.env`:
 
-```bash
-npm run build
-```
+| Variable | Purpose |
+| --- | --- |
+| `YRKA_GATEWAY_API_KEY` | Agency gateway key (server-side only, `/api/generate`) |
+| `YRKA_GATEWAY_BASE_URL` | Optional gateway override |
+| `YRKA_IMAGE_MODEL` | Optional image model override |
 
-Preview the production build locally:
+## Commands
 
-```bash
-npm run preview
-```
+- `bun install`
+- `bun run dev` — dev server (UI; `/api/generate` needs `vercel dev` or a deployed env)
+- `bun run build` — production build
+
+## Deployment
+
+Vercel (framework preset: Vite). SPA rewrites in `vercel.json`; `api/` holds
+the serverless function. The deployed demo runs without the gateway key until
+credentials are pushed to Vercel env vars — the UI surfaces a clear
+"not configured" error until then.
