@@ -30,6 +30,7 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ config, onChange, isO
             <span className="text-slate-700 dark:text-slate-300 font-medium">Dark Mode</span>
             <button
               onClick={() => onChange({ ...config, isDark: !config.isDark })}
+              aria-label="Toggle dark mode"
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                 config.isDark ? '' : 'bg-slate-300'
               }`}
