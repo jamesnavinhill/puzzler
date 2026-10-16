@@ -3,7 +3,7 @@
 A web-based jigsaw puzzle game: drop in any photo (or generate one with AI),
 choose 25/100/250 pieces, and play with drag, snap, zoom, and pan on canvas.
 
-Live at https://puzzler.vercel.app
+Live at https://puzzler.navinhill.com
 
 ## Features
 
