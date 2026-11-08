@@ -101,7 +101,7 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
         ref={buttonRef}
         type="button"
         onClick={handleOpenToggle}
-        className="group flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-line bg-canvas/60 px-3 transition-colors hover:border-accent/50 focus:outline-none"
+        className="group flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-line bg-canvas/60 px-3 transition-colors hover:border-accent/50 focus:outline-none"
         title="Change AI model and view daily quota"
         aria-label={`Model: ${activeModel.shortName}, ${gensLeft} of ${totalGens} generations remaining`}
       >

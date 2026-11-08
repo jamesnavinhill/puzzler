@@ -26,7 +26,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }
 
   return (
     <div
-      className={`group relative flex flex-1 w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border-2 border-dashed p-3 text-center transition-all duration-300 cursor-pointer ${
+      className={`group relative flex aspect-[2/3] h-full max-h-[10.5rem] sm:max-h-[11.5rem] w-auto mx-auto flex-col items-center justify-center gap-2.5 overflow-hidden rounded-xl border-2 border-dashed p-3 text-center transition-all duration-300 cursor-pointer ${
         isDragging
           ? 'border-accent bg-accent/10 shadow-[0_0_0_4px_color-mix(in_srgb,var(--accent)_10%,transparent)]'
           : 'border-line/80 bg-canvas/40 hover:border-accent/60 hover:bg-canvas/65'
@@ -47,13 +47,13 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }
         title="Choose an image"
       />
 
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-panel-2 text-accent shadow-sm transition-transform duration-300 group-hover:scale-105">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-panel-2 text-accent shadow-sm transition-transform duration-300 group-hover:scale-105">
         <svg
-          className="h-4 w-4"
+          className="h-5 w-5"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
-          strokeWidth={2}
+          strokeWidth={1.8}
           aria-hidden="true"
         >
           <path
@@ -64,12 +64,12 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }
         </svg>
       </div>
 
-      <div className="space-y-0.5">
-        <p className="text-xs font-semibold text-ink">
-          {isDragging ? 'Drop it here' : 'Drop an image here'}
+      <div className="space-y-0.5 px-1">
+        <p className="text-xs font-semibold leading-tight text-ink">
+          {isDragging ? 'Drop it here' : 'Drop photo'}
         </p>
-        <p className="text-[11px] text-muted">
-          or <span className="text-accent underline underline-offset-2">browse files</span>
+        <p className="text-[11px] leading-tight text-muted">
+          or <span className="text-accent underline underline-offset-2">browse</span>
         </p>
       </div>
     </div>
