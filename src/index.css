@@ -125,10 +125,15 @@
   }
 }
 
-/* Lift the carousel toward the viewport center without letting it crowd the
-   headline on shorter screens. */
-.hero-carousel-lift {
-  transform: translateY(clamp(-5rem, calc((11rem + var(--hero-card) - 100dvh) / 2), 0rem));
+/* Size the hero art from the viewport, leaving room for the headline and the
+   action below without relying on fixed content widths. */
+.hero-card-size {
+  --hero-card: min(
+    calc(16rem + 22vw),
+    calc(100vw - 2.5rem),
+    calc(100dvh - 18rem),
+    39rem
+  );
 }
 
 .volume-range::-webkit-slider-runnable-track {

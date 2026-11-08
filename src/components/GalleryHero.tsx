@@ -139,13 +139,13 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
         Puzzle your <span className="text-accent">art.</span>
       </h1>
 
-      <div className="relative mt-4 flex min-h-0 w-full flex-1 items-center sm:mt-5">
+      <div className="relative mt-4 flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-4 px-5 sm:mt-5 sm:gap-5 sm:px-0">
         <div
           role="region"
           aria-roledescription="carousel"
           aria-label="Selected artwork"
           tabIndex={0}
-          className="hero-carousel-lift relative h-[var(--hero-card)] max-h-full w-full touch-pan-y select-none overflow-hidden outline-none [--hero-card:clamp(18rem,39vw,39rem)]"
+          className="hero-card-size relative h-[var(--hero-card)] max-h-full w-full touch-pan-y select-none overflow-hidden outline-none"
           style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -266,32 +266,6 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                       </div>
                     </div>
 
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
-
-                    <div className="absolute inset-x-0 bottom-0 z-30 flex justify-center px-3 pb-3 sm:pb-5">
-                      <button
-                        type="button"
-                        onClick={() => onStart(activeImage, selectedPieces)}
-                        onPointerDown={stopDrag}
-                        className="group/cta inline-flex max-w-full items-center gap-2.5 rounded-full bg-accent px-7 py-3.5 text-sm font-bold text-on-accent shadow-[0_16px_38px_-16px_color-mix(in_srgb,var(--accent)_85%,transparent)] transition-all hover:brightness-105 active:scale-[0.985] sm:px-8 sm:py-4 sm:text-base"
-                      >
-                        Generate a puzzle
-                        <svg
-                          className="h-4 w-4 transition-transform group-hover/cta:translate-x-0.5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2.2}
-                            d="M5 12h14M13 6l6 6-6 6"
-                          />
-                        </svg>
-                      </button>
-                    </div>
                   </div>
                 );
               }
@@ -327,6 +301,28 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
             Selected artwork: {activeImage?.title}
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={() => onStart(activeImage, selectedPieces)}
+          className="group/cta z-30 inline-flex max-w-full shrink-0 items-center gap-2.5 rounded-full bg-accent px-7 py-3.5 text-sm font-bold text-on-accent shadow-[0_16px_38px_-16px_color-mix(in_srgb,var(--accent)_85%,transparent)] transition-all hover:brightness-105 active:scale-[0.985] sm:px-8 sm:py-4 sm:text-base"
+        >
+          Generate a puzzle
+          <svg
+            className="h-4 w-4 transition-transform group-hover/cta:translate-x-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2.2}
+              d="M5 12h14M13 6l6 6-6 6"
+            />
+          </svg>
+        </button>
       </div>
     </section>
   );
