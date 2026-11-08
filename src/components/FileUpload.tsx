@@ -2,24 +2,22 @@ import React, { useState } from 'react';
 
 interface FileUploadProps {
   onImageSelect: (file: File) => void;
+  className?: string;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect }) => {
+const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       onImageSelect(file);
-      event.target.value = '';
     }
   };
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
-    event.stopPropagation();
     setIsDragging(false);
-
     const file = event.dataTransfer.files?.[0];
     if (file) {
       onImageSelect(file);
@@ -28,11 +26,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect }) => {
 
   return (
     <div
-      className={`group relative flex h-12 w-full items-center gap-3 overflow-hidden rounded-xl border-2 border-dashed px-3.5 transition-all duration-300 ${
+      className={`group relative flex flex-1 w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-300 cursor-pointer ${
         isDragging
           ? 'border-accent bg-accent/10 shadow-[0_0_0_6px_color-mix(in_srgb,var(--accent)_10%,transparent)]'
-          : 'border-line bg-canvas/55 hover:border-accent/55 hover:bg-panel'
-      }`}
+          : 'border-line/80 bg-canvas/40 hover:border-accent/60 hover:bg-canvas/65'
+      } ${className}`}
       onDragOver={(event) => {
         event.preventDefault();
         setIsDragging(true);
@@ -42,48 +40,38 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect }) => {
     >
       <input
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/webp"
         onChange={handleFileChange}
-        className="absolute inset-0 z-20 h-full w-full cursor-pointer opacity-0"
-        aria-label="Upload an image for your puzzle"
+        className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+        aria-label="Upload an image file"
         title="Choose an image"
       />
 
-      <svg
-        className={`h-5 w-5 shrink-0 text-accent transition-transform duration-300 ${
-          isDragging ? 'scale-110' : 'group-hover:scale-105'
-        }`}
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.7}
-          d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v3.5A2.5 2.5 0 007.5 20h9a2.5 2.5 0 002.5-2.5V14"
-        />
-      </svg>
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-panel-2 text-accent shadow-sm transition-transform duration-300 group-hover:scale-105">
+        <svg
+          className="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v3.5A2.5 2.5 0 007.5 20h9a2.5 2.5 0 002.5-2.5V14"
+          />
+        </svg>
+      </div>
 
-      <p className="min-w-0 flex-1 truncate text-sm leading-tight">
-        <span className="font-semibold text-ink">
-          {isDragging ? 'Drop it here' : 'Upload a photo'}
-        </span>
-        <span className="ml-2 text-xs text-muted">
-          {isDragging ? 'We will optimize it for play' : 'Drop or browse'}
-        </span>
-      </p>
-
-      <svg
-        className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-accent"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
+      <div className="space-y-1">
+        <p className="text-xs font-semibold text-ink">
+          {isDragging ? 'Drop it here' : 'Drop an image here'}
+        </p>
+        <p className="text-[11px] text-muted">
+          or <span className="text-accent underline underline-offset-2">browse files</span>
+        </p>
+      </div>
     </div>
   );
 };

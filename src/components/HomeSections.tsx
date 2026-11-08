@@ -66,11 +66,11 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
         <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
           <h2
             id="create-title"
-            className="flex flex-wrap items-baseline justify-center gap-x-8 gap-y-3 text-center text-[clamp(1.35rem,3.4vw,2.2rem)] font-semibold leading-tight tracking-[-0.035em] text-ink sm:gap-x-12"
+            className="flex flex-wrap items-baseline justify-center gap-x-8 gap-y-3 text-center text-[clamp(1.5rem,3.6vw,2.4rem)] font-bold leading-tight tracking-[-0.035em] text-ink sm:gap-x-12"
           >
             {STEPS.map((step, index) => (
-              <span key={step} className="inline-flex items-baseline gap-2.5">
-                <span className="text-[0.82em] font-bold tabular-nums text-accent">
+              <span key={step} className="inline-flex items-baseline gap-2.5 sm:gap-3">
+                <span className="text-[0.85em] font-extrabold tabular-nums text-accent">
                   0{index + 1}
                 </span>
                 <span>{step}</span>
@@ -78,52 +78,56 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
             ))}
           </h2>
 
-          <div className="mx-auto mt-10 grid max-w-4xl gap-4 sm:gap-5 md:grid-cols-2">
-            <div className="flex min-h-[13.5rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
-              <div>
-                <h3 className="text-sm font-semibold text-ink">Start from your own image.</h3>
-                <p className="mt-1 text-xs leading-relaxed text-muted">
-                  Drop a JPG, PNG, or WebP. It stays on your device.
-                </p>
-              </div>
+          <div className="mx-auto mt-10 grid max-w-3xl gap-5 sm:gap-6 md:grid-cols-2">
+            {/* Card 1: Upload an image */}
+            <div className="flex h-[24rem] sm:h-[26rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
+              <h3 className="text-center text-base sm:text-lg font-semibold tracking-[-0.02em] text-ink">
+                Upload an image
+              </h3>
 
-              <div className="mt-4">
+              <div className="my-3 flex flex-1 flex-col">
                 {isProcessing ? (
-                  <div className="flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-line bg-canvas/55">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" />
-                    <p className="text-sm font-semibold text-ink">Preparing your image</p>
+                  <div className="flex flex-1 w-full flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-canvas/40 p-6 text-center">
+                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-accent" />
+                    <p className="text-xs font-semibold text-ink">Preparing your image…</p>
                   </div>
                 ) : (
                   <FileUpload onImageSelect={onImageSelect} />
                 )}
               </div>
+
+              <p className="text-center text-xs text-muted">
+                PNG, JPEG, WebP · 15MB max
+              </p>
             </div>
 
-            <div className="flex min-h-[13.5rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
-              <div>
-                <h3 className="text-sm font-semibold text-ink">Or make one with AI.</h3>
-                <p className="mt-1 text-xs leading-relaxed text-muted">
-                  Describe a scene and we&apos;ll generate the artwork.
-                </p>
-              </div>
+            {/* Card 2: Generate an Image */}
+            <div className="flex h-[24rem] sm:h-[26rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
+              <h3 className="text-center text-base sm:text-lg font-semibold tracking-[-0.02em] text-ink">
+                Generate an Image
+              </h3>
 
-              <div className="mt-4 flex items-center gap-2">
+              <div className="my-3 flex flex-1 flex-col">
                 <label htmlFor="ai-prompt" className="sr-only">
                   Describe the image to generate
                 </label>
-                <input
+                <textarea
                   id="ai-prompt"
                   value={aiPrompt}
                   maxLength={300}
                   onChange={(event) => onAiPromptChange(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault();
                       onGenerateAi();
                     }
                   }}
                   placeholder="A greenhouse on a winter night…"
-                  className="h-12 min-w-0 flex-1 rounded-xl border border-line bg-canvas/55 px-3.5 text-sm text-ink placeholder:text-muted/60 focus:border-accent/70 focus:outline-none"
+                  className="flex-1 w-full resize-none rounded-xl border border-line bg-canvas/40 p-3.5 text-sm leading-relaxed text-ink placeholder:text-muted/60 focus:border-accent/70 focus:outline-none"
                 />
+              </div>
+
+              <div className="flex items-center gap-2.5">
                 <ModelPickerButton
                   selectedModel={selectedModel}
                   onModelChange={onSelectedModelChange}
@@ -132,12 +136,12 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                   type="button"
                   onClick={onGenerateAi}
                   disabled={!aiPrompt.trim() || isGenerating}
-                  className="inline-flex h-12 shrink-0 items-center gap-2 rounded-xl bg-accent px-4 sm:px-5 text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-xs sm:text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isGenerating ? (
                     <>
                       <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-on-accent/30 border-t-on-accent" />
-                      Making
+                      Making…
                     </>
                   ) : (
                     'Generate'

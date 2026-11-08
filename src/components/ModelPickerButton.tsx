@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   clearLocalTelemetry,
   GenerationTelemetry,
@@ -8,7 +8,7 @@ import {
 
 export type ModelKey = 'klein-4b' | 'schnell';
 
-interface ModelInfo {
+export interface ModelInfo {
   id: ModelKey;
   shortName: string;
   fullName: string;
@@ -36,7 +36,7 @@ export const AI_MODELS: Record<ModelKey, ModelInfo> = {
   },
 };
 
-const DAILY_BUDGET = 10_000;
+export const DAILY_BUDGET = 10_000;
 
 interface ModelPickerButtonProps {
   selectedModel: ModelKey;
@@ -49,6 +49,9 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
 }) => {
   const [telemetry, setTelemetry] = useState<GenerationTelemetry>(loadTelemetry);
   const [isOpen, setIsOpen] = useState(false);
+  const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
+  const [align, setAlign] = useState<'left' | 'right'>('left');
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -63,35 +66,67 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
     };
   }, []);
 
+  const handleOpenToggle = () => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const popoverHeight = 240;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // Naturally open upward if near the bottom of the viewport
+      if (spaceBelow < popoverHeight && spaceAbove > spaceBelow) {
+        setPlacement('top');
+      } else {
+        setPlacement('bottom');
+      }
+
+      // Check horizontal boundary: if button is near right viewport edge, align right
+      if (rect.left + 288 > window.innerWidth - 16) {
+        setAlign('right');
+      } else {
+        setAlign('left');
+      }
+    }
+    setIsOpen((prev) => !prev);
+  };
+
   const activeModel = AI_MODELS[selectedModel] ?? AI_MODELS['klein-4b'];
   const remainingBudget = Math.max(0, DAILY_BUDGET - telemetry.totalNeurons);
   const gensLeft = Math.floor(remainingBudget / activeModel.cost);
 
   return (
-    <div className="relative inline-block shrink-0">
+    <div className="relative flex-1">
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="group inline-flex h-12 shrink-0 items-center gap-2 rounded-xl border border-line bg-canvas/55 px-3 transition-colors hover:border-accent/40 focus:outline-none"
+        onClick={handleOpenToggle}
+        className="group flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-line bg-canvas/60 px-3 transition-colors hover:border-accent/50 focus:outline-none"
         title="Change AI model and view daily quota"
         aria-label={`Model: ${activeModel.shortName}, ${gensLeft} generations remaining`}
       >
-        <span className="max-w-[4.25rem] truncate text-[11px] font-medium text-muted transition-colors group-hover:text-ink">
-          {activeModel.shortName}
-        </span>
-        <span className="text-xs font-bold tabular-nums text-ink">
+        <span className="shrink-0 text-xs font-bold tabular-nums text-accent">
           {gensLeft}
+        </span>
+        <span className="max-w-[4.5rem] truncate text-xs font-medium text-ink transition-colors">
+          {activeModel.shortName}
         </span>
       </button>
 
       {isOpen && (
         <>
+          {/* Fullscreen backdrop to dismiss on outside click */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
-          <div className="absolute bottom-full right-0 z-50 mb-2 w-72 rounded-2xl border border-line bg-panel p-3.5 shadow-xl backdrop-blur-md sm:bottom-auto sm:top-full sm:mt-2">
+
+          {/* Naturally anchored popover */}
+          <div
+            className={`absolute z-50 w-72 rounded-2xl border border-line bg-panel p-3.5 shadow-2xl backdrop-blur-md transition-all animate-fade-in ${
+              placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+            } ${align === 'right' ? 'right-0' : 'left-0'}`}
+          >
             {/* Header with two-model group toggle */}
             <div className="flex items-center justify-between pb-2.5 border-b border-line/60">
               <span className="text-xs font-semibold text-ink">Model</span>
@@ -146,7 +181,7 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
                 </div>
               ) : (
                 <p className="text-[11px] text-muted px-1 pt-0.5">
-                  Daily allowance: {Math.floor(DAILY_BUDGET / activeModel.cost)} runs
+                  Daily allowance: ~{Math.floor(DAILY_BUDGET / activeModel.cost)} runs
                 </p>
               )}
             </div>
