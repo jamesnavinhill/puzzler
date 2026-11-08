@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Local-only gallery source and build artifacts
+.media-build
+.media-source
+.reference
+.screenshots
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -24,3 +30,10 @@ dist-ssr
 *.sw?
 .vercel
 .env*
+!.env.example
+
+# Scratch checks and local API probes
+.tmp/
+
+.media-build/
+public/images

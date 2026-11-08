@@ -1,67 +1,123 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface FileUploadProps {
   onImageSelect: (file: File) => void;
+  compact?: boolean;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect }) => {
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, compact = false }) => {
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
       onImageSelect(file);
-      // Reset input value to allow re-selecting the same file if needed
-      e.target.value = '';
+      event.target.value = '';
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const file = e.dataTransfer.files?.[0];
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+
+    const file = event.dataTransfer.files?.[0];
     if (file) {
       onImageSelect(file);
     }
   };
 
   return (
-    <div 
-      className="relative w-full max-w-2xl mx-auto h-64 border-4 border-dashed rounded-xl border-slate-300 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all group"
-      onDragOver={(e) => e.preventDefault()}
+    <div
+      className={`group relative w-full overflow-hidden rounded-2xl border-2 border-dashed transition-all duration-300 ${
+        compact ? 'h-32' : 'h-64 max-w-2xl'
+      } ${
+        isDragging
+          ? 'border-accent bg-accent/10 shadow-[0_0_0_6px_color-mix(in_srgb,var(--accent)_10%,transparent)]'
+          : 'border-line bg-panel/60 hover:border-accent/55 hover:bg-panel/85'
+      }`}
+      onDragOver={(event) => {
+        event.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
     >
-      {/* 
-        THE FIX: 
-        The input covers the entire parent div absolutely. 
-        Opacity 0 makes it invisible but it captures all clicks directly.
-        No JS click handlers required.
-      */}
       <input
         type="file"
         accept="image/*"
         onChange={handleFileChange}
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"
-        title="Click to upload an image"
+        className="absolute inset-0 z-20 h-full w-full cursor-pointer opacity-0"
+        aria-label="Upload an image for your puzzle"
+        title="Choose an image"
       />
-      
-      {/* Visual content centered underneath the invisible input */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-        <div className="mb-4 p-4 rounded-full bg-[hsla(var(--accent-hue),var(--accent-sat),var(--accent-light),0.1)] group-hover:scale-110 transition-transform">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+
+      {compact ? (
+        <div className="pointer-events-none relative z-10 flex h-full items-center gap-3 px-4">
+          <div
+            className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-accent/20 bg-accent/10 text-accent transition-transform duration-300 ${
+              isDragging ? 'scale-110' : 'group-hover:scale-105'
+            }`}
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.7}
+                d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v3.5A2.5 2.5 0 007.5 20h9a2.5 2.5 0 002.5-2.5V14"
+              />
             </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-semibold tracking-tight text-ink">
+              {isDragging ? 'Drop it here' : 'Upload a photo'}
+            </h3>
+            <p className="mt-0.5 text-[11px] leading-snug text-muted">
+              {isDragging ? 'We will optimize it for play' : 'Drop or browse'}
+            </p>
+          </div>
+          <svg
+            className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-accent"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </div>
+      ) : (
+        <div className="pointer-events-none relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+          <div
+            className={`mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-accent/20 bg-accent/10 text-accent transition-transform duration-300 ${
+              isDragging ? 'scale-110' : 'group-hover:scale-105'
+            }`}
+          >
+            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.7}
+                d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v3.5A2.5 2.5 0 007.5 20h9a2.5 2.5 0 002.5-2.5V14"
+              />
+            </svg>
+          </div>
 
-        <h3 className="text-xl font-bold mb-2 text-slate-700 dark:text-slate-200">
-            Upload Your Photo
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400 mb-6">
-            Click here or drag an image
-        </p>
+          <h3 className="text-xl font-semibold tracking-tight text-ink">
+            {isDragging ? 'Drop it right here' : 'Drop an image here'}
+          </h3>
+          <p className="mt-1.5 text-sm text-muted">
+            {isDragging ? 'We will optimize it for play' : 'or choose a file from your device'}
+          </p>
 
-        <div className="px-6 py-2 rounded-full font-semibold text-white bg-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] shadow-lg">
-            Select Image
+          <span className="mt-5 inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-bold text-on-accent shadow-[0_10px_24px_-10px_color-mix(in_srgb,var(--accent)_70%,transparent)]">
+            Choose image
+          </span>
+          <p className="mt-3 text-[11px] text-muted/80">
+            JPG, PNG or WebP · optimized locally to 1600px
+          </p>
         </div>
-      </div>
+      )}
     </div>
   );
 };

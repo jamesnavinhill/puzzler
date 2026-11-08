@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ThemeConfig } from '../types';
+import { accentColor, DEFAULT_THEME } from '../theme';
 
 interface ThemeCustomizerProps {
   config: ThemeConfig;
@@ -8,90 +9,230 @@ interface ThemeCustomizerProps {
   onClose: () => void;
 }
 
-const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ config, onChange, isOpen, onClose }) => {
+const PRESETS = [
+  { label: 'Golden', hue: 34, saturation: 80, lightness: 64 },
+  { label: 'Ember', hue: 18, saturation: 72, lightness: 56 },
+  { label: 'Sage', hue: 112, saturation: 26, lightness: 46 },
+  { label: 'Sky', hue: 204, saturation: 58, lightness: 56 },
+  { label: 'Plum', hue: 318, saturation: 40, lightness: 58 },
+];
+
+const sliderThumbClasses =
+  '[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-panel [&::-webkit-slider-thumb]:bg-ink [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-panel [&::-moz-range-thumb]:bg-ink';
+
+const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({
+  config,
+  onChange,
+  isOpen,
+  onClose,
+}) => {
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) {
     return null;
   }
 
+  const accent = accentColor(config.hue, config.saturation, config.lightness);
+  const update = (patch: Partial<ThemeConfig>) => onChange({ ...config, ...patch });
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Appearance</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0c0a08]/55 p-4 backdrop-blur-sm animate-fade-in"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="appearance-title"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto scrollbar-thin rounded-3xl border border-line bg-panel shadow-2xl animate-rise-in"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-line p-5 sm:p-6">
+          <h2 id="appearance-title" className="text-xl font-semibold tracking-tight text-ink">
+            Appearance
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close appearance"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-ink"
+          >
+            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <span className="text-slate-700 dark:text-slate-300 font-medium">Dark Mode</span>
+        <div className="space-y-5 p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-panel-2/35 px-4 py-3.5">
+            <div>
+              <p className="text-sm font-semibold text-ink">{config.isDark ? 'Warm charcoal' : 'Pale golden light'}</p>
+              <p className="mt-0.5 text-xs text-muted">
+                {config.isDark ? 'Low-light, muted and warm.' : 'Flat off-white with a soft glow.'}
+              </p>
+            </div>
             <button
-              onClick={() => onChange({ ...config, isDark: !config.isDark })}
+              type="button"
+              onClick={() => update({ isDark: !config.isDark })}
+              role="switch"
+              aria-checked={config.isDark}
               aria-label="Toggle dark mode"
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                config.isDark ? '' : 'bg-slate-300'
-              }`}
-              style={
+              className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors ${
                 config.isDark
-                  ? {
-                      backgroundColor: `hsl(${config.hue}, ${config.saturation}%, ${Math.max(35, config.lightness - 10)}%)`,
-                    }
-                  : undefined
-              }
+                  ? 'border-accent/50 bg-accent/25'
+                  : 'border-line bg-panel-2'
+              }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  config.isDark ? 'translate-x-6' : 'translate-x-1'
+                className={`inline-block h-5 w-5 rounded-full shadow-sm transition-transform ${
+                  config.isDark
+                    ? 'translate-x-6 bg-accent'
+                    : 'translate-x-1 bg-panel'
                 }`}
               />
             </button>
           </div>
 
-          <hr className="border-slate-100 dark:border-slate-700" />
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Accent Hue</label>
-            <input
-              type="range"
-              min="0"
-              max="360"
-              value={config.hue}
-              onChange={(e) => onChange({ ...config, hue: Number(e.target.value) })}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-              style={{
-                background:
-                  'linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)',
-              }}
+          <div className="flex items-center gap-3 rounded-2xl border border-line bg-panel-2/30 p-4">
+            <span
+              className="h-12 w-12 shrink-0 rounded-xl shadow-inner ring-1 ring-black/10"
+              style={{ backgroundColor: accent }}
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Saturation</label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={config.saturation}
-              onChange={(e) => onChange({ ...config, saturation: Number(e.target.value) })}
-              className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-slate-500"
-            />
-          </div>
-
-          <div className="pt-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-ink">Accent colour</p>
+              <p className="mt-0.5 text-xs text-muted">
+                {config.hue}° hue · {config.saturation}% sat · {config.lightness}% light
+              </p>
+            </div>
             <button
-              className="w-full py-3 rounded-xl text-white font-bold transition-transform active:scale-95 shadow-lg"
-              style={{
-                backgroundColor: `hsl(${config.hue}, ${config.saturation}%, ${config.lightness}%)`,
-                boxShadow: `0 4px 14px 0 hsla(${config.hue}, ${config.saturation}%, ${config.lightness}%, 0.39)`,
-              }}
-              onClick={onClose}
+              type="button"
+              onClick={() => onChange(DEFAULT_THEME)}
+              className="shrink-0 text-xs font-semibold text-accent underline-offset-4 hover:underline"
             >
-              Apply Theme
+              Reset
             </button>
           </div>
+
+          <div className="space-y-4">
+            <label className="block">
+              <span className="mb-2 flex items-center justify-between text-sm font-medium text-ink">
+                Hue <span className="text-xs font-normal tabular-nums text-muted">{config.hue}°</span>
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="360"
+                value={config.hue}
+                onChange={(event) => update({ hue: Number(event.target.value) })}
+                aria-label="Accent hue"
+                className={`h-2 w-full cursor-pointer appearance-none rounded-full ${sliderThumbClasses}`}
+                style={{
+                  background:
+                    'linear-gradient(to right, #f45b5b, #f4d65b, #7bd47b, #5bd9d4, #6b8ff4, #c76bf4, #f45b8e, #f45b5b)',
+                }}
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 flex items-center justify-between text-sm font-medium text-ink">
+                Saturation
+                <span className="text-xs font-normal tabular-nums text-muted">{config.saturation}%</span>
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={config.saturation}
+                onChange={(event) => update({ saturation: Number(event.target.value) })}
+                aria-label="Accent saturation"
+                className={`h-2 w-full cursor-pointer appearance-none rounded-full ${sliderThumbClasses}`}
+                style={{
+                  background: `linear-gradient(to right, hsl(${config.hue}, 0%, ${config.lightness}%), hsl(${config.hue}, 100%, ${config.lightness}%))`,
+                }}
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 flex items-center justify-between text-sm font-medium text-ink">
+                Lightness
+                <span className="text-xs font-normal tabular-nums text-muted">{config.lightness}%</span>
+              </span>
+              <input
+                type="range"
+                min="25"
+                max="85"
+                value={config.lightness}
+                onChange={(event) => update({ lightness: Number(event.target.value) })}
+                aria-label="Accent lightness"
+                className={`h-2 w-full cursor-pointer appearance-none rounded-full ${sliderThumbClasses}`}
+                style={{
+                  background: `linear-gradient(to right, hsl(${config.hue}, ${config.saturation}%, 25%), hsl(${config.hue}, ${config.saturation}%, 55%), hsl(${config.hue}, ${config.saturation}%, 85%))`,
+                }}
+              />
+            </label>
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-medium text-ink">Quick picks</p>
+            <div className="flex flex-wrap gap-2">
+              {PRESETS.map((preset) => {
+                const presetColour = accentColor(preset.hue, preset.saturation, preset.lightness);
+                const active =
+                  config.hue === preset.hue &&
+                  config.saturation === preset.saturation &&
+                  config.lightness === preset.lightness;
+
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() =>
+                      update({
+                        hue: preset.hue,
+                        saturation: preset.saturation,
+                        lightness: preset.lightness,
+                      })
+                    }
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      active
+                        ? 'border-accent/60 bg-accent/10 text-ink'
+                        : 'border-line bg-panel-2/40 text-muted hover:border-accent/30 hover:text-ink'
+                    }`}
+                  >
+                    <span
+                      className="h-3.5 w-3.5 rounded-full ring-1 ring-black/10"
+                      style={{ backgroundColor: presetColour }}
+                    />
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full rounded-xl bg-accent px-5 py-3 text-sm font-bold text-on-accent shadow-[0_12px_28px_-12px_color-mix(in_srgb,var(--accent)_75%,transparent)] transition-all hover:brightness-105 active:scale-[0.99]"
+          >
+            Apply appearance
+          </button>
         </div>
       </div>
     </div>

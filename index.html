@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PuzzleMaster — Navin Hill</title>
-    <meta name="description" content="PuzzleMaster by Navin Hill" />
-    <meta name="theme-color" content="#f3f1ec" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#090e12" media="(prefers-color-scheme: dark)" />
+    <title>Puzzler — Navin Hill</title>
+    <meta name="description" content="Puzzler by Navin Hill — choose an original artwork, pick your difficulty, and settle into a quiet jigsaw puzzle." />
+    <meta name="theme-color" content="#171311" id="theme-color" />
+    <meta name="color-scheme" content="dark light" />
     <link rel="icon" type="image/x-icon" href="https://media.navinhill.com/brand/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="https://media.navinhill.com/brand/favicon-32x32.png" media="(prefers-color-scheme: light)" />
     <link rel="icon" type="image/png" sizes="16x16" href="https://media.navinhill.com/brand/favicon-16x16.png" media="(prefers-color-scheme: light)" />
@@ -14,64 +14,97 @@
     <link rel="icon" type="image/png" sizes="16x16" href="https://media.navinhill.com/brand/favicon-dark-16x16.png" media="(prefers-color-scheme: dark)" />
     <link rel="apple-touch-icon" sizes="180x180" href="https://media.navinhill.com/brand/apple-touch-icon.png" />
     <link rel="manifest" href="https://media.navinhill.com/brand/site.webmanifest" />
+    <link rel="canonical" href="https://puzzler.navinhill.com/" />
 
     <!-- Open Graph & Twitter -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Navin Hill" />
-    <meta property="og:title" content="PuzzleMaster — Navin Hill" />
+    <meta property="og:title" content="Puzzler — Navin Hill" />
+    <meta property="og:description" content="Choose an original artwork, pick your difficulty, and settle into a quiet jigsaw puzzle." />
+    <meta property="og:url" content="https://puzzler.navinhill.com/" />
     <meta property="og:image" content="https://media.navinhill.com/brand/og-image.png" />
+    <meta property="og:image:alt" content="Navin Hill" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Puzzler — Navin Hill" />
+    <meta name="twitter:description" content="Choose an original artwork, pick your difficulty, and settle into a quiet jigsaw puzzle." />
     <meta name="twitter:image" content="https://media.navinhill.com/brand/og-image.png" />
 
+    <link rel="icon" href="https://media.navinhill.com/brand/favicon-dark.ico" media="(prefers-color-scheme: dark)" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://puzzler-media.navinhill.com" crossorigin />
+    <link rel="preconnect" href="https://media.navinhill.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
     <style>
       :root {
-        --accent-hue: 332;
-        --accent-sat: 84%;
-        --accent-light: 62%;
-        --bg-color: #f8fafc;
-        --text-color: #0f172a;
-        --panel-bg: #ffffff;
+        color-scheme: light;
+        --accent-hue: 34;
+        --accent-sat: 80%;
+        --accent-light: 64%;
+        --accent: hsl(var(--accent-hue), var(--accent-sat), var(--accent-light));
+        --on-accent: #2b1d0d;
+
+        --app-bg: #f4f0e7;
+        --app-panel: #fffcf6;
+        --app-panel-2: #ebe4d7;
+        --app-text: #241f19;
+        --app-muted: #746a5d;
+        --app-line: #ded4c4;
       }
 
       .dark-mode {
-        --bg-color: #0f172a;
-        --text-color: #f8fafc;
-        --panel-bg: #1e293b;
+        color-scheme: dark;
+        --app-bg: #171311;
+        --app-panel: #211c18;
+        --app-panel-2: #2b251f;
+        --app-text: #f4eee3;
+        --app-muted: #a99e8e;
+        --app-line: #373029;
+      }
+
+      html,
+      body,
+      #root {
+        height: 100%;
       }
 
       body {
-        font-family: 'Inter', sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
+        margin: 0;
+        font-family: "Inter", system-ui, sans-serif;
+        background-color: var(--app-bg);
+        color: var(--app-text);
         transition: background-color 0.3s ease, color 0.3s ease;
         overflow: hidden;
-      }
-
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background: hsla(var(--accent-hue), var(--accent-sat), var(--accent-light), 0.5);
-        border-radius: 4px;
-      }
-
-      ::-webkit-scrollbar-thumb:hover {
-        background: hsla(var(--accent-hue), var(--accent-sat), var(--accent-light), 0.8);
       }
     </style>
   </head>
   <body class="dark-mode">
+    <script>
+      (function () {
+        try {
+          var saved = JSON.parse(localStorage.getItem("puzzler.theme.v1") || "null");
+          if (saved && typeof saved.isDark === "boolean") {
+            document.documentElement.classList.toggle("dark", saved.isDark);
+            document.body.classList.toggle("dark-mode", saved.isDark);
+          }
+          if (saved) {
+            var root = document.documentElement;
+            if (typeof saved.hue === "number") root.style.setProperty("--accent-hue", saved.hue);
+            if (typeof saved.saturation === "number") root.style.setProperty("--accent-sat", saved.saturation + "%");
+            if (typeof saved.lightness === "number") root.style.setProperty("--accent-light", saved.lightness + "%");
+            root.style.setProperty(
+              "--accent",
+              "hsl(" + saved.hue + ", " + saved.saturation + "%, " + saved.lightness + "%)"
+            );
+          }
+        } catch (error) {
+          /* localStorage can be unavailable in private contexts. */
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

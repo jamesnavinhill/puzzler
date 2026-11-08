@@ -1,6 +1,10 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PuzzlePiece } from '../types';
-import { calculateGridDimensions, drawPiecePath, generatePuzzlePieces } from '../utils/puzzleGenerator';
+import {
+  calculateGridDimensions,
+  drawPiecePath,
+  generatePuzzlePieces,
+} from '../utils/puzzleGenerator';
 
 interface PuzzleCanvasProps {
   imageSrc: string;
@@ -12,6 +16,8 @@ interface PuzzleCanvasProps {
 }
 
 const SNAP_THRESHOLD = 30;
+const MIN_SCALE = 0.25;
+const MAX_SCALE = 4;
 
 const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
   imageSrc,
@@ -36,9 +42,9 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [completedCount, setCompletedCount] = useState(0);
 
-  const [status, setStatus] = useState<'loading_image' | 'waiting_for_layout' | 'generating' | 'ready' | 'error'>(
-    'loading_image'
-  );
+  const [status, setStatus] = useState<
+    'loading_image' | 'waiting_for_layout' | 'generating' | 'ready' | 'error'
+  >('loading_image');
   const [errorMessage, setErrorMessage] = useState('');
 
   useLayoutEffect(() => {
@@ -77,6 +83,7 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     onProgressChange(0);
 
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.src = imageSrc;
     img.onload = () => {
       setLoadedImage(img);
@@ -125,7 +132,11 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
           finalWidth = maxHeight * imgRatio;
         }
 
-        const { rows, cols, pieceWidth, pieceHeight } = calculateGridDimensions(finalWidth, finalHeight, pieceCount);
+        const { rows, cols, pieceWidth, pieceHeight } = calculateGridDimensions(
+          finalWidth,
+          finalHeight,
+          pieceCount
+        );
         const generatedPieces = generatePuzzlePieces(rows, cols, pieceWidth, pieceHeight);
 
         const boardWidth = cols * pieceWidth;
@@ -165,7 +176,12 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
               break;
           }
 
-          if (x < 0 || y < 0 || x > containerW - piece.width || y > containerH - piece.height) {
+          if (
+            x < 0 ||
+            y < 0 ||
+            x > containerW - piece.width ||
+            y > containerH - piece.height
+          ) {
             x = Math.random() * (containerW - piece.width);
             y = Math.random() * (containerH - piece.height);
           }
@@ -178,8 +194,8 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
         setPieces(scatteredPieces);
         setCompletedCount(0);
         setStatus('ready');
-      } catch (error) {
-        console.error(error);
+      } catch (generationError) {
+        console.error(generationError);
         setStatus('error');
         setErrorMessage('Generation failed');
       }
@@ -193,6 +209,35 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     onProgressChange(progress);
   }, [completedCount, onProgressChange, pieces.length]);
 
+  // Dev-only QA hook used by the screenshot capture pass. The DEV guard keeps
+  // it out of production builds.
+  useEffect(() => {
+    if (!import.meta.env.DEV) {
+      return;
+    }
+
+    const handleAutoSolve = () => {
+      if (pieces.length === 0) {
+        return;
+      }
+
+      setPieces((previous) =>
+        previous.map((piece) => ({
+          ...piece,
+          currentX: piece.correctX,
+          currentY: piece.correctY,
+          isLocked: true,
+        }))
+      );
+      setCompletedCount(pieces.length);
+      onProgressChange(100);
+      onComplete();
+    };
+
+    window.addEventListener('puzzler:autosolve', handleAutoSolve);
+    return () => window.removeEventListener('puzzler:autosolve', handleAutoSolve);
+  }, [onComplete, onProgressChange, pieces.length]);
+
   const render = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -200,11 +245,13 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
       return;
     }
 
+    const isDark = document.body.classList.contains('dark-mode');
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.translate(transform.x, transform.y);
     ctx.scale(transform.scale, transform.scale);
+    ctx.imageSmoothingQuality = 'high';
 
     const maxCol = Math.max(...pieces.map((piece) => piece.col));
     const maxRow = Math.max(...pieces.map((piece) => piece.row));
@@ -214,17 +261,17 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     const boardOffsetX = (containerDimensions.width - boardWidth) / 2;
     const boardOffsetY = (containerDimensions.height - boardHeight) / 2;
 
-    ctx.fillStyle = document.body.classList.contains('dark-mode') ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)';
+    ctx.fillStyle = isDark ? 'rgba(255, 244, 228, 0.035)' : 'rgba(37, 30, 22, 0.035)';
     ctx.fillRect(boardOffsetX, boardOffsetY, boardWidth, boardHeight);
 
     if (showPreview) {
       ctx.save();
-      ctx.globalAlpha = 0.15;
+      ctx.globalAlpha = 0.22;
       ctx.drawImage(loadedImage, boardOffsetX, boardOffsetY, boardWidth, boardHeight);
       ctx.restore();
     }
 
-    ctx.strokeStyle = document.body.classList.contains('dark-mode') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    ctx.strokeStyle = isDark ? 'rgba(255, 241, 222, 0.11)' : 'rgba(37, 30, 22, 0.12)';
     ctx.lineWidth = 2;
     ctx.strokeRect(boardOffsetX, boardOffsetY, boardWidth, boardHeight);
 
@@ -261,10 +308,10 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
       ctx.restore();
 
       ctx.strokeStyle = piece.isLocked
-        ? 'rgba(255,255,255,0.1)'
-        : document.body.classList.contains('dark-mode')
-          ? 'rgba(255,255,255,0.4)'
-          : 'rgba(0,0,0,0.2)';
+        ? 'rgba(255, 255, 255, 0.1)'
+        : isDark
+          ? 'rgba(255, 243, 226, 0.4)'
+          : 'rgba(37, 30, 22, 0.22)';
       ctx.lineWidth = 1 / transform.scale;
       ctx.stroke();
 
@@ -279,7 +326,15 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
 
       ctx.restore();
     });
-  }, [accentColor, containerDimensions, draggedPieceId, loadedImage, pieces, showPreview, transform]);
+  }, [
+    accentColor,
+    containerDimensions,
+    draggedPieceId,
+    loadedImage,
+    pieces,
+    showPreview,
+    transform,
+  ]);
 
   useEffect(() => {
     let handle: number;
@@ -324,7 +379,7 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
       const { x, y } = getMousePos(event);
       const sensitivity = 0.001;
       const delta = -event.deltaY * sensitivity;
-      const newScale = Math.min(Math.max(0.25, transform.scale + delta), 4);
+      const newScale = Math.min(Math.max(MIN_SCALE, transform.scale + delta), MAX_SCALE);
 
       const worldPos = toWorld(x, y);
       const newX = x - worldPos.x * newScale;
@@ -336,6 +391,32 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     canvas.addEventListener('wheel', handleWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', handleWheel);
   }, [transform]);
+
+  const zoomBy = (factor: number) => {
+    setTransform((previous) => {
+      const nextScale = Math.min(
+        MAX_SCALE,
+        Math.max(MIN_SCALE, previous.scale * factor)
+      );
+
+      if (nextScale === previous.scale) {
+        return previous;
+      }
+
+      const centerX = containerDimensions.width / 2;
+      const centerY = containerDimensions.height / 2;
+      const worldX = (centerX - previous.x) / previous.scale;
+      const worldY = (centerY - previous.y) / previous.scale;
+
+      return {
+        x: centerX - worldX * nextScale,
+        y: centerY - worldY * nextScale,
+        scale: nextScale,
+      };
+    });
+  };
+
+  const resetView = () => setTransform({ x: 0, y: 0, scale: 1 });
 
   const handlePointerDown = (event: React.MouseEvent | React.TouchEvent) => {
     const { x, y } = getMousePos(event);
@@ -358,23 +439,22 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
 
     if (clickedPiece) {
       setDraggedPieceId(clickedPiece.id);
-      setDragOffset({ x: worldPos.x - clickedPiece.currentX, y: worldPos.y - clickedPiece.currentY });
+      setDragOffset({
+        x: worldPos.x - clickedPiece.currentX,
+        y: worldPos.y - clickedPiece.currentY,
+      });
     } else {
       setIsPanning(true);
     }
   };
 
   const handlePointerMove = (event: React.MouseEvent | React.TouchEvent) => {
-    if (event.cancelable) {
-      event.preventDefault();
-    }
-
     const { x, y } = getMousePos(event);
     const worldPos = toWorld(x, y);
 
     if (draggedPieceId !== null) {
-      setPieces((prev) =>
-        prev.map((piece) => {
+      setPieces((previous) =>
+        previous.map((piece) => {
           if (piece.id === draggedPieceId) {
             return {
               ...piece,
@@ -391,10 +471,10 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     if (isPanning) {
       const dx = x - lastMousePos.x;
       const dy = y - lastMousePos.y;
-      setTransform((prev) => ({
-        ...prev,
-        x: prev.x + dx,
-        y: prev.y + dy,
+      setTransform((previous) => ({
+        ...previous,
+        x: previous.x + dx,
+        y: previous.y + dy,
       }));
       setLastMousePos({ x, y });
     }
@@ -422,29 +502,28 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
 
     const targetAbsX = boardOffsetX + piece.correctX;
     const targetAbsY = boardOffsetY + piece.correctY;
+    const shouldLock =
+      Math.hypot(piece.currentX - targetAbsX, piece.currentY - targetAbsY) < SNAP_THRESHOLD;
 
-    if (Math.hypot(piece.currentX - targetAbsX, piece.currentY - targetAbsY) < SNAP_THRESHOLD) {
-      setPieces((prev) => {
-        const next = prev.map((current) => {
-          if (current.id === draggedPieceId) {
-            return {
+    if (shouldLock) {
+      const nextPieces = pieces.map((current) =>
+        current.id === draggedPieceId
+          ? {
               ...current,
               currentX: targetAbsX,
               currentY: targetAbsY,
               isLocked: true,
-            };
-          }
+            }
+          : current
+      );
+      const lockedCount = nextPieces.filter((current) => current.isLocked).length;
 
-          return current;
-        });
+      setPieces(nextPieces);
+      setCompletedCount(lockedCount);
 
-        if (next.every((current) => current.isLocked)) {
-          onComplete();
-        }
-
-        setCompletedCount(next.filter((current) => current.isLocked).length);
-        return next;
-      });
+      if (lockedCount === pieces.length) {
+        onComplete();
+      }
     }
 
     setDraggedPieceId(null);
@@ -453,26 +532,30 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full relative touch-none bg-slate-50 dark:bg-slate-900 overflow-hidden cursor-crosshair"
+      className="relative h-full w-full touch-none overflow-hidden bg-canvas"
     >
       {status !== 'ready' && status !== 'error' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 z-20 pointer-events-none">
-          <div className="w-10 h-10 border-4 border-t-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] border-slate-200 rounded-full animate-spin mb-4" />
-          <p className="text-slate-600 dark:text-slate-300 font-medium animate-pulse">
-            {status === 'loading_image' && 'Loading Image...'}
-            {status === 'waiting_for_layout' && 'Measuring Canvas...'}
-            {status === 'generating' && 'Cutting Pieces...'}
+        <div className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center bg-canvas">
+          <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-line border-t-accent" />
+          <p className="animate-pulse text-sm font-medium text-muted">
+            {status === 'loading_image' && 'Loading image…'}
+            {status === 'waiting_for_layout' && 'Measuring canvas…'}
+            {status === 'generating' && 'Cutting pieces…'}
           </p>
         </div>
       )}
 
       {status === 'error' && (
-        <div className="absolute inset-0 flex items-center justify-center z-30 bg-slate-50 dark:bg-slate-900">
-          <div className="bg-red-50 text-red-600 px-6 py-4 rounded-xl border border-red-200 shadow-lg text-center">
-            <p className="font-bold mb-2">Error</p>
-            <p>{errorMessage}</p>
-            <button onClick={() => window.location.reload()} className="text-sm underline mt-4 hover:text-red-800">
-              Reload App
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-canvas p-4">
+          <div className="rounded-2xl border border-red-500/25 bg-panel px-6 py-5 text-center text-red-600 shadow-xl dark:text-red-300">
+            <p className="font-semibold">Could not start this puzzle</p>
+            <p className="mt-1 text-sm opacity-80">{errorMessage}</p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-4 text-sm font-semibold underline underline-offset-4"
+            >
+              Reload app
             </button>
           </div>
         </div>
@@ -489,8 +572,48 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
         onTouchStart={handlePointerDown}
         onTouchMove={handlePointerMove}
         onTouchEnd={handlePointerUp}
-        className="block w-full h-full"
+        onTouchCancel={handlePointerUp}
+        className="block h-full w-full cursor-crosshair"
       />
+
+      {status === 'ready' && (
+        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-0.5 rounded-full border border-line bg-panel/90 p-1 shadow-lg backdrop-blur">
+          <button
+            type="button"
+            onClick={() => zoomBy(1.2)}
+            aria-label="Zoom in"
+            title="Zoom in"
+            className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => zoomBy(0.8)}
+            aria-label="Zoom out"
+            title="Zoom out"
+            className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
+            </svg>
+          </button>
+          <span className="mx-0.5 h-4 w-px bg-line" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={resetView}
+            aria-label="Reset view"
+            title="Reset view"
+            className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 4h6M4 4v6M20 4h-6M20 4v6M4 20h6M4 20v-6M20 20h-6M20 20v-6" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

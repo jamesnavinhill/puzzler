@@ -1,49 +1,82 @@
 import React, { useEffect, useState } from 'react';
 import AudioPlayer from './components/AudioPlayer';
-import FileUpload from './components/FileUpload';
+import BrandMark from './components/BrandMark';
+import GalleryHero from './components/GalleryHero';
+import HomeSections from './components/HomeSections';
 import PuzzleCanvas from './components/PuzzleCanvas';
+import PuzzleFocus from './components/PuzzleFocus';
 import ThemeCustomizer from './components/ThemeCustomizer';
+import { GalleryImage, galleryImages } from './data/gallery.generated';
+import {
+  accentColor,
+  getAccentContrast,
+  loadTheme,
+  THEME_STORAGE_KEY,
+} from './theme';
 import { GameSettings, ThemeConfig } from './types';
 
-type GameState = 'home' | 'setup' | 'playing' | 'completed';
+type GameState = 'home' | 'playing' | 'completed';
+
+interface FocusTarget {
+  src: string;
+  alt: string;
+}
+
+const difficultyFor = (pieces: number): GameSettings['difficulty'] =>
+  pieces === 25 ? 'easy' : pieces === 250 ? 'hard' : 'medium';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('home');
   const [image, setImage] = useState<string | null>(null);
+  const [focus, setFocus] = useState<FocusTarget | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [completionPercent, setCompletionPercent] = useState(0);
+  const [gameId, setGameId] = useState(0);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const [gameSettings, setGameSettings] = useState<GameSettings>({
     difficulty: 'medium',
-    pieceCount: 50,
+    pieceCount: 100,
     showPreview: true,
   });
 
-  const [theme, setTheme] = useState<ThemeConfig>({
-    hue: 332,
-    saturation: 84,
-    lightness: 62,
-    isDark: true,
-  });
+  const [theme, setTheme] = useState<ThemeConfig>(() => loadTheme());
 
   useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty('--accent-hue', theme.hue.toString());
+    root.style.setProperty('--accent-hue', String(theme.hue));
     root.style.setProperty('--accent-sat', `${theme.saturation}%`);
     root.style.setProperty('--accent-light', `${theme.lightness}%`);
+    root.style.setProperty('--accent', accentColor(theme.hue, theme.saturation, theme.lightness));
+    root.style.setProperty(
+      '--on-accent',
+      getAccentContrast(theme.hue, theme.saturation, theme.lightness)
+    );
+    root.classList.toggle('dark', theme.isDark);
+    document.body.classList.toggle('dark-mode', theme.isDark);
+    root.style.colorScheme = theme.isDark ? 'dark' : 'light';
 
-    if (theme.isDark) {
-      document.body.classList.add('dark-mode');
-      document.documentElement.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark-mode');
-      document.documentElement.classList.remove('dark');
+    const themeColour = document.getElementById('theme-color');
+    themeColour?.setAttribute('content', theme.isDark ? '#171311' : '#f4f0e7');
+
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
+    } catch {
+      /* Private browsing may reject localStorage writes. */
     }
   }, [theme]);
 
   const processImage = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setError('That file is not an image. Choose a JPG, PNG or WebP.');
+      return;
+    }
+
+    setError(null);
     setIsProcessing(true);
     setCompletionPercent(0);
 
@@ -68,12 +101,18 @@ const App: React.FC = () => {
 
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
+        const context = canvas.getContext('2d');
 
-        const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        setImage(optimizedDataUrl);
-        setGameState('setup');
+        if (!context) {
+          setError('This browser could not prepare that image.');
+          setIsProcessing(false);
+          return;
+        }
+
+        context.drawImage(img, 0, 0, width, height);
+        const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+
+        setFocus({ src: optimizedDataUrl, alt: 'Your photo' });
         setIsProcessing(false);
       };
 
@@ -98,117 +137,119 @@ const App: React.FC = () => {
     processImage(file);
   };
 
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-
   const generateAiImage = async () => {
     const prompt = aiPrompt.trim();
-    if (!prompt || isGenerating) return;
+    if (!prompt || isGenerating) {
+      return;
+    }
+
     setError(null);
     setIsGenerating(true);
+
     try {
-      const res = await fetch('/api/generate', {
+      const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.imageB64) {
-        throw new Error(data.error || `Generation failed (${res.status}).`);
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || !data.imageB64) {
+        throw new Error(data.error || `Generation failed (${response.status}).`);
       }
-      processGeneratedImage(data.imageB64);
+
+      const mimeType = typeof data.mimeType === 'string' ? data.mimeType : 'image/jpeg';
+      const dataUrl = `data:${mimeType};base64,${data.imageB64}`;
+      const img = new Image();
+      img.onload = () => {
+        setFocus({ src: dataUrl, alt: 'AI generated artwork' });
+        setCompletionPercent(0);
+      };
+      img.onerror = () => setError('Generated image could not be loaded.');
+      img.src = dataUrl;
       setAiPrompt('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'AI generation failed.');
+    } catch (generationError) {
+      setError(
+        generationError instanceof Error
+          ? generationError.message
+          : 'AI generation failed.'
+      );
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const processGeneratedImage = (b64: string) => {
-    const dataUrl = `data:image/jpeg;base64,${b64}`;
-    const img = new Image();
-    img.onload = () => {
-      setImage(dataUrl);
-      setGameState('setup');
-    };
-    img.onerror = () => setError('Generated image could not be loaded.');
-    img.src = dataUrl;
-  };
-
-  const loadDemoImage = () => {
+  const handleArtworkSelect = (artwork: GalleryImage) => {
     setError(null);
-    setIsProcessing(true);
-    setCompletionPercent(0);
-
-    const demoImage = new Image();
-    demoImage.crossOrigin = 'Anonymous';
-    const src =
-      '/images/demo-landscape.jpg';
-
-    demoImage.src = src;
-    demoImage.onload = () => {
-      setImage(src);
-      setGameState('setup');
-      setIsProcessing(false);
-    };
-
-    demoImage.onerror = () => {
-      setError('Failed to load demo image.');
-      setIsProcessing(false);
-    };
-  };
-
-  const updateDifficulty = (difficulty: GameSettings['difficulty']) => {
-    const counts = { easy: 25, medium: 100, hard: 250 };
-    setGameSettings((prev) => ({
-      ...prev,
-      difficulty,
-      pieceCount: counts[difficulty],
-    }));
+    const index = galleryImages.findIndex((item) => item.id === artwork.id);
+    if (index >= 0) {
+      setCarouselIndex(index);
+    }
+    setFocus({ src: artwork.full, alt: artwork.alt });
   };
 
   const startGame = () => {
     setCompletionPercent(0);
+    setGameId((id) => id + 1);
+    setGameState('playing');
+  };
+
+  const handleStartPieces = (pieces: number) => {
+    if (!focus) {
+      return;
+    }
+
+    setImage(focus.src);
+    setCompletionPercent(0);
+    setGameSettings((settings) => ({
+      ...settings,
+      difficulty: difficultyFor(pieces),
+      pieceCount: pieces,
+    }));
+    setGameId((id) => id + 1);
+    setFocus(null);
     setGameState('playing');
   };
 
   const resetGame = () => {
     setGameState('home');
     setImage(null);
+    setFocus(null);
     setIsProcessing(false);
     setCompletionPercent(0);
+    setError(null);
+    setShowSettings(false);
   };
 
   const showGameplayHeader = gameState === 'playing' || gameState === 'completed';
 
   return (
-    <div className="min-h-screen flex flex-col transition-colors duration-300">
-      <header className="px-4 md:px-6 py-3 md:py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 md:gap-3 cursor-pointer" onClick={resetGame}>
-            <div className="w-8 h-8 rounded-lg bg-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[hsla(var(--accent-hue),var(--accent-sat),var(--accent-light),0.4)]">
-              P
-            </div>
-            <h1 className="text-lg md:text-xl font-bold tracking-tight text-slate-800 dark:text-white hidden sm:block">
-              PuzzleMaster
-            </h1>
+    <div className="flex h-full flex-col bg-canvas text-ink">
+      <header className="relative z-30 shrink-0 border-b border-line bg-canvas/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center gap-2 px-3 sm:gap-3 sm:px-5">
+          <button
+            type="button"
+            onClick={resetGame}
+            className="group flex shrink-0 items-center gap-2.5 rounded-xl text-left"
+            aria-label="Puzzler home"
+          >
+            <BrandMark className="h-8 w-auto sm:h-9" />
+          </button>
+
+          <div className="flex min-w-0 flex-1 justify-center px-1 sm:px-4">
+            <AudioPlayer />
           </div>
 
-          <div className="flex-1 flex justify-center mx-2 md:mx-4 min-w-0">
-            {showGameplayHeader && <AudioPlayer />}
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             {showGameplayHeader && (
-              <div className="hidden sm:flex items-center gap-2 w-28 md:w-40">
-                <div className="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+              <div className="hidden items-center gap-2 sm:flex">
+                <div className="h-1.5 w-24 overflow-hidden rounded-full bg-panel-2 md:w-32">
                   <div
-                    className="h-full bg-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] transition-[width] duration-300 ease-out"
+                    className="h-full bg-accent transition-[width] duration-300 ease-out"
                     style={{ width: `${completionPercent}%` }}
                   />
                 </div>
-                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 tabular-nums min-w-[2.5rem] text-right">
+                <span className="min-w-[2.5rem] text-right text-xs font-semibold tabular-nums text-muted">
                   {completionPercent}%
                 </span>
               </div>
@@ -216,56 +257,61 @@ const App: React.FC = () => {
 
             {gameState === 'playing' && (
               <button
-                onClick={() => setGameSettings((settings) => ({ ...settings, showPreview: !settings.showPreview }))}
-                className={`p-2 rounded-full transition-colors ${
+                type="button"
+                onClick={() =>
+                  setGameSettings((settings) => ({
+                    ...settings,
+                    showPreview: !settings.showPreview,
+                  }))
+                }
+                className={`grid h-9 w-9 place-items-center rounded-full transition-colors ${
                   gameSettings.showPreview
-                    ? 'text-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] bg-slate-100 dark:bg-slate-800'
-                    : 'text-slate-400 hover:text-slate-600'
+                    ? 'bg-accent/15 text-accent'
+                    : 'text-muted hover:bg-panel-2 hover:text-ink'
                 }`}
-                title="Toggle Preview"
+                title="Toggle preview"
+                aria-label="Toggle preview"
+                aria-pressed={gameSettings.showPreview}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               </button>
             )}
 
             <button
+              type="button"
               onClick={() => setShowSettings(true)}
-              className="p-2 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] transition-colors"
+              className="grid h-9 w-9 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-accent"
               title="Appearance"
+              aria-label="Open appearance settings"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                />
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
               </svg>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col overflow-hidden relative z-0">
-        {error && gameState !== 'playing' && (
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-red-500/10 border border-red-500/40 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl text-sm shadow-lg">
+      <main className="relative min-h-0 flex-1 overflow-hidden">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="animate-soft-pulse absolute -top-40 left-1/2 h-[30rem] w-[44rem] -translate-x-1/2 rounded-full bg-accent/10 blur-3xl" />
+          <div className="absolute -bottom-24 right-[-8%] h-72 w-72 rounded-full bg-accent/5 blur-3xl" />
+          <div className="absolute inset-0 text-ink opacity-[0.035] [background-image:radial-gradient(circle_at_1px_1px,currentColor_1px,transparent_0)] [background-size:26px_26px]" />
+        </div>
+
+        {error && (
+          <div
+            role="alert"
+            className="fixed bottom-4 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-3 rounded-xl border border-red-500/35 bg-panel px-4 py-2.5 text-sm text-red-600 shadow-xl dark:text-red-300"
+          >
             <span>{error}</span>
             <button
+              type="button"
               onClick={() => setError(null)}
-              className="text-red-500/70 hover:text-red-500"
+              className="text-red-500/70 transition-colors hover:text-red-500"
               aria-label="Dismiss error"
             >
               ✕
@@ -274,181 +320,106 @@ const App: React.FC = () => {
         )}
 
         {gameState === 'home' && (
-          <div className="flex-1 flex flex-col items-center justify-center p-6 animate-fade-in">
-            <div className="max-w-2xl text-center mb-8">
-              <h2 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-slate-100 mb-4 tracking-tight">
-                Piece Together Your{' '}
-                <span className="text-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))]">Memories</span>
-              </h2>
-              <p className="text-lg text-slate-500 dark:text-slate-400">
-                Upload a photo, choose your difficulty, and enjoy a relaxing puzzle experience.
-              </p>
-            </div>
-
-            {isProcessing ? (
-              <div className="w-full max-w-2xl mx-auto h-64 border-4 border-dashed rounded-xl border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-800/50 flex flex-col items-center justify-center">
-                <div className="w-12 h-12 border-4 border-t-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] border-slate-200 rounded-full animate-spin mb-4" />
-                <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200">Processing Image...</h3>
-                <p className="text-slate-400">Optimizing for gameplay</p>
-              </div>
-            ) : (
-              <>
-                <FileUpload onImageSelect={handleImageSelect} />
-
-                <div className="mt-6 flex items-center gap-2">
-                  <span className="text-slate-400 text-sm">Or try this:</span>
-                  <button
-                    onClick={loadDemoImage}
-                    className="text-sm font-medium text-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] hover:underline underline-offset-4"
-                  >
-                    Use Demo Landscape Photo
-                  </button>
-                </div>
-
-                <div className="mt-4 w-full max-w-md mx-auto">
-                  <div className="flex gap-2">
-                    <input
-                      value={aiPrompt}
-                      onChange={(e) => setAiPrompt(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') generateAiImage();
-                      }}
-                      placeholder="Describe a puzzle image… (AI)"
-                      className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))]/40"
-                    />
-                    <button
-                      onClick={generateAiImage}
-                      disabled={!aiPrompt.trim() || isGenerating}
-                      className="rounded-lg bg-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      {isGenerating ? 'Generating…' : 'Generate'}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {gameState === 'setup' && image && (
-          <div className="absolute inset-0 z-30 overflow-y-auto bg-slate-50 dark:bg-slate-900 scrollbar-thin">
-            <div className="min-h-full flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-slate-800 p-5 md:p-8 rounded-2xl shadow-xl max-w-4xl w-full flex flex-col md:flex-row gap-6 border border-slate-200 dark:border-slate-700">
-                <div className="flex-1 flex flex-col">
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Your Photo</h3>
-                  <div className="relative rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-inner flex-1 min-h-[200px] md:min-h-[300px] flex items-center justify-center group">
-                    <img
-                      src={image}
-                      alt="Puzzle Preview"
-                      className="max-w-full max-h-[300px] md:max-h-[400px] object-contain shadow-lg"
-                    />
-                  </div>
-                </div>
-
-                <div className="w-full md:w-80 flex flex-col gap-5 flex-shrink-0">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-3">Puzzle Settings</h3>
-
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
-                      Difficulty Level
-                    </label>
-                    <div className="space-y-2.5">
-                      {(['easy', 'medium', 'hard'] as const).map((difficulty) => (
-                        <div
-                          key={difficulty}
-                          onClick={() => updateDifficulty(difficulty)}
-                          className={`p-3 md:p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between select-none ${
-                            gameSettings.difficulty === difficulty
-                              ? 'border-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] bg-[hsla(var(--accent-hue),var(--accent-sat),var(--accent-light),0.05)]'
-                              : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                          }`}
-                        >
-                          <div>
-                            <p className="font-bold text-slate-800 dark:text-slate-200 capitalize text-sm md:text-base">
-                              {difficulty}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              {difficulty === 'easy' ? '25' : difficulty === 'medium' ? '100' : '250'} Pieces
-                            </p>
-                          </div>
-                          {gameSettings.difficulty === difficulty && (
-                            <div className="w-5 h-5 rounded-full bg-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] flex items-center justify-center">
-                              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mt-auto pt-2 flex gap-3">
-                    <button
-                      onClick={resetGame}
-                      className="px-4 py-3 rounded-xl font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
-                    >
-                      Back
-                    </button>
-                    <button
-                      onClick={startGame}
-                      className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] hover:brightness-110 shadow-lg shadow-[hsla(var(--accent-hue),var(--accent-sat),var(--accent-light),0.3)] transition-all active:scale-95"
-                    >
-                      Start Puzzle
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="relative h-full overflow-y-auto scrollbar-thin">
+            <GalleryHero
+              index={carouselIndex}
+              onIndexChange={setCarouselIndex}
+              onGenerate={handleArtworkSelect}
+            />
+            <HomeSections
+              onArtworkSelect={handleArtworkSelect}
+              onImageSelect={handleImageSelect}
+              aiPrompt={aiPrompt}
+              onAiPromptChange={setAiPrompt}
+              onGenerateAi={() => void generateAiImage()}
+              isGenerating={isGenerating}
+              isProcessing={isProcessing}
+            />
           </div>
         )}
 
         {(gameState === 'playing' || gameState === 'completed') && image && (
-          <div className="absolute inset-0 w-full h-full bg-slate-100 dark:bg-slate-900 shadow-inner overflow-hidden">
+          <div className="absolute inset-0 bg-canvas">
             <PuzzleCanvas
+              key={gameId}
               imageSrc={image}
               pieceCount={gameSettings.pieceCount}
-              onComplete={() => setGameState('completed')}
+              onComplete={() => {
+                setCompletionPercent(100);
+                setGameState('completed');
+              }}
               onProgressChange={setCompletionPercent}
               showPreview={gameSettings.showPreview}
-              accentColor={`hsl(${theme.hue}, ${theme.saturation}%, ${theme.lightness}%)`}
+              accentColor={accentColor(theme.hue, theme.saturation, theme.lightness)}
             />
           </div>
         )}
       </main>
 
       {gameState === 'completed' && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl text-center max-w-sm w-full mx-4 transform transition-all scale-100 border border-white/10">
-            <div className="w-20 h-20 mx-auto mb-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
+        <div className="fixed inset-0 z-[60] grid place-items-center bg-[#0c0a08]/70 p-4 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md overflow-hidden rounded-3xl border border-line bg-panel shadow-2xl animate-rise-in">
+            <div className="relative h-36 overflow-hidden bg-panel-2">
+              {image && (
+                <img
+                  src={image}
+                  alt="Finished puzzle"
+                  className="h-full w-full scale-105 object-cover opacity-80"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-panel via-panel/35 to-transparent" />
             </div>
-            <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Puzzle Solved!</h3>
-            <p className="text-slate-500 dark:text-slate-300 mb-8 leading-relaxed">
-              Fantastic work! You&apos;ve successfully completed the{' '}
-              <span className="font-semibold text-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))]">
-                {gameSettings.difficulty}
-              </span>{' '}
-              puzzle.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => setGameState('playing')}
-                className="w-full px-5 py-3 rounded-xl bg-[hsl(var(--accent-hue),var(--accent-sat),var(--accent-light))] text-white font-bold hover:brightness-110 transition-colors shadow-lg"
-              >
-                Admire Puzzle
-              </button>
-              <button
-                onClick={resetGame}
-                className="w-full px-5 py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-              >
-                Create New Puzzle
-              </button>
+
+            <div className="relative -mt-9 px-6 pb-6 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-accent text-on-accent shadow-[0_14px_30px_-10px_color-mix(in_srgb,var(--accent)_85%,transparent)]">
+                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="mt-4 text-2xl font-semibold tracking-tight text-ink">Nicely pieced.</h2>
+              <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-muted">
+                You finished the{' '}
+                <span className="font-semibold text-ink">
+                  {gameSettings.pieceCount}-piece
+                </span>{' '}
+                puzzle.
+              </p>
+
+              <div className="mt-6 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={startGame}
+                  className="w-full rounded-xl bg-accent px-5 py-3 text-sm font-bold text-on-accent transition-all hover:brightness-105 active:scale-[0.99]"
+                >
+                  Play again
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGameState('playing')}
+                  className="w-full rounded-xl border border-line bg-panel-2/40 px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-panel-2"
+                >
+                  Admire the finished puzzle
+                </button>
+                <button
+                  type="button"
+                  onClick={resetGame}
+                  className="w-full rounded-xl px-5 py-2.5 text-sm font-semibold text-muted transition-colors hover:text-ink"
+                >
+                  Start a new puzzle
+                </button>
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {focus && (
+        <PuzzleFocus
+          src={focus.src}
+          alt={focus.alt}
+          onClose={() => setFocus(null)}
+          onStart={handleStartPieces}
+        />
       )}
 
       <ThemeCustomizer
