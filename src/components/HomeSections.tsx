@@ -80,36 +80,33 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
 
           <div className="mx-auto mt-10 grid max-w-3xl gap-5 sm:gap-6 md:grid-cols-2">
             {/* Card 1: Upload an image */}
-            <div className="flex h-[17rem] sm:h-[18rem] flex-col justify-between rounded-2xl border border-line/80 bg-panel/50 p-5 sm:p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
-              <h3 className="text-center text-sm sm:text-base font-semibold tracking-[-0.015em] text-ink">
+            <div className="flex h-[17rem] flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+              <h3 className="h-6 text-center text-sm font-semibold tracking-[-0.015em] text-ink">
                 Upload an image
               </h3>
 
-              <div className="my-2 flex flex-1 items-center justify-center">
+              <div className="mt-3.5 flex flex-1 flex-col items-center justify-center">
                 {isProcessing ? (
-                  <div className="flex aspect-[2/3] h-full max-h-[9.75rem] sm:max-h-[10.5rem] w-auto mx-auto flex-col items-center justify-center gap-2.5 rounded-2xl border border-line/80 bg-canvas/40 p-3 text-center">
-                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-accent" />
-                    <p className="text-xs font-semibold text-ink">Preparing…</p>
+                  <div className="flex h-36 w-24 flex-col items-center justify-center gap-2 rounded-xl border-2 border-line/60 bg-canvas/30 text-center">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" />
+                    <span className="text-[10px] font-medium text-muted">Preparing…</span>
                   </div>
                 ) : (
                   <FileUpload onImageSelect={onImageSelect} />
                 )}
-              </div>
-
-              <div className="flex h-11 items-center justify-center">
-                <p className="text-center text-xs text-muted/80">
+                <p className="mt-2.5 text-center text-[11px] text-muted/60">
                   PNG, JPEG, WebP · 15MB max
                 </p>
               </div>
             </div>
 
             {/* Card 2: Generate an Image */}
-            <div className="flex h-[17rem] sm:h-[18rem] flex-col justify-between rounded-2xl border border-line/80 bg-panel/50 p-5 sm:p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
-              <h3 className="text-center text-sm sm:text-base font-semibold tracking-[-0.015em] text-ink">
+            <div className="flex h-[17rem] flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+              <h3 className="h-6 text-center text-sm font-semibold tracking-[-0.015em] text-ink">
                 Generate an Image
               </h3>
 
-              <div className="my-2 flex flex-1 flex-col">
+              <div className="mt-3.5 flex flex-1 flex-col justify-between">
                 <label htmlFor="ai-prompt" className="sr-only">
                   Describe the image to generate
                 </label>
@@ -125,30 +122,30 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                     }
                   }}
                   placeholder="A greenhouse on a winter night…"
-                  className="flex-1 w-full resize-none rounded-xl border border-line/80 bg-canvas/40 p-3.5 text-xs sm:text-sm leading-relaxed text-ink placeholder:text-muted/50 focus:border-accent/70 focus:bg-canvas/60 focus:outline-none transition-colors"
+                  className="h-32 w-full resize-none rounded-xl border border-line/80 bg-canvas/40 p-3 text-xs sm:text-sm leading-relaxed text-ink placeholder:text-muted/40 focus:border-accent/70 focus:bg-canvas/60 focus:outline-none transition-colors"
                 />
-              </div>
 
-              <div className="flex h-11 items-center gap-2.5">
-                <ModelPickerButton
-                  selectedModel={selectedModel}
-                  onModelChange={onSelectedModelChange}
-                />
-                <button
-                  type="button"
-                  onClick={onGenerateAi}
-                  disabled={!aiPrompt.trim() || isGenerating}
-                  className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-xs sm:text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40 shadow-sm"
-                >
-                  {isGenerating ? (
-                    <>
-                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-on-accent/30 border-t-on-accent" />
-                      Making…
-                    </>
-                  ) : (
-                    'Generate'
-                  )}
-                </button>
+                <div className="flex h-11 items-center gap-2.5">
+                  <ModelPickerButton
+                    selectedModel={selectedModel}
+                    onModelChange={onSelectedModelChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={onGenerateAi}
+                    disabled={!aiPrompt.trim() || isGenerating}
+                    className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-xs sm:text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40 shadow-sm"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-on-accent/30 border-t-on-accent" />
+                        Making…
+                      </>
+                    ) : (
+                      'Generate'
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
