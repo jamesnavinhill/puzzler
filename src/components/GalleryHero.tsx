@@ -167,7 +167,7 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onGener
                   }}
                 >
                   <img
-                    src={isActive ? image.full : image.thumb}
+                    src={image.thumb}
                     alt={image.alt}
                     loading={depth <= 1 ? 'eager' : 'lazy'}
                     decoding="async"
