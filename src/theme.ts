@@ -1,6 +1,7 @@
 import { ThemeConfig } from './types';
 
-export const THEME_STORAGE_KEY = 'puzzler.theme.v1';
+export const THEME_STORAGE_KEY = 'puzzled.theme.v1';
+export const LEGACY_THEME_STORAGE_KEY = 'puzzler.theme.v1';
 
 export const DEFAULT_THEME: ThemeConfig = {
   hue: 346,
@@ -114,7 +115,9 @@ export const normalizeTheme = (value: unknown): ThemeConfig => {
 
 export const loadTheme = (): ThemeConfig => {
   try {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    const stored =
+      window.localStorage.getItem(THEME_STORAGE_KEY) ||
+      window.localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
     return stored ? normalizeTheme(JSON.parse(stored)) : DEFAULT_THEME;
   } catch {
     return DEFAULT_THEME;

@@ -1,10 +1,10 @@
-# Puzzler
+# Puzzled
 
 A native jigsaw puzzle experience by Navin Hill. Start from a galactic original,
 upload a photo, or describe an AI image; choose 25, 100, or 250 pieces; then drag,
 snap, zoom, and pan on canvas while Navin Hill's catalog streams alongside.
 
-Live at https://puzzler.navinhill.com
+Live at https://puzzled.navinhill.com
 
 ## Features
 

@@ -14,6 +14,8 @@ import {
   THEME_STORAGE_KEY,
 } from './theme';
 import { GameSettings, ThemeConfig } from './types';
+import { ModelKey } from './components/ModelPickerButton';
+import { recordGeneration } from './utils/neurons';
 
 type GameState = 'home' | 'playing' | 'completed';
 
@@ -36,6 +38,7 @@ const App: React.FC = () => {
   const [gameId, setGameId] = useState(0);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<ModelKey>('klein-4b');
 
   const [gameSettings, setGameSettings] = useState<GameSettings>({
     difficulty: 'medium',
@@ -149,13 +152,17 @@ const App: React.FC = () => {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, model: selectedModel }),
       });
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || !data.imageB64) {
         throw new Error(data.error || `Generation failed (${response.status}).`);
       }
+
+      const usedNeurons = typeof data.neurons === 'number' ? data.neurons : 104;
+      const usedModel = typeof data.model === 'string' ? data.model : 'klein-4b';
+      recordGeneration(usedNeurons, usedModel);
 
       const mimeType = typeof data.mimeType === 'string' ? data.mimeType : 'image/jpeg';
       const dataUrl = `data:${mimeType};base64,${data.imageB64}`;
@@ -242,7 +249,7 @@ const App: React.FC = () => {
             type="button"
             onClick={resetGame}
             className="group flex shrink-0 items-center justify-self-start rounded-xl text-left"
-            aria-label="Puzzler home"
+            aria-label="Puzzled home"
           >
             <BrandMark className="h-7 w-auto sm:h-8" />
           </button>
@@ -380,6 +387,8 @@ const App: React.FC = () => {
               onGenerateAi={() => void generateAiImage()}
               isGenerating={isGenerating}
               isProcessing={isProcessing}
+              selectedModel={selectedModel}
+              onSelectedModelChange={setSelectedModel}
             />
           </div>
         )}

@@ -99,33 +99,6 @@
   animation: soft-pulse 5s ease-in-out infinite;
 }
 
-/* The Generate button stays still; its puzzle piece does the talking. */
-@keyframes puzzle-wiggle {
-  0% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(-14deg);
-  }
-  50% {
-    transform: rotate(11deg);
-  }
-  75% {
-    transform: rotate(-5deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
-}
-
-.generate-puzzle-btn:hover .generate-puzzle-icon,
-.generate-puzzle-btn:focus-visible .generate-puzzle-icon {
-  /* Deliberately exempt from prefers-reduced-motion: a ~14° rotation of a
-     20px icon is a micro-interaction, not vestibular motion — and it is the
-     button's only hover feedback. */
-  animation: puzzle-wiggle 0.55s ease-in-out;
-}
-
 @keyframes title-scroll {
   0%,
   8% {

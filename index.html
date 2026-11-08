@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Puzzler — Navin Hill</title>
-    <meta name="description" content="Puzzler by Navin Hill — choose an original artwork, pick your difficulty, and settle into a quiet jigsaw puzzle." />
+    <title>Puzzled — Navin Hill</title>
+    <meta name="description" content="Puzzled by Navin Hill — choose an original artwork, pick your difficulty, and settle into a quiet jigsaw puzzle." />
     <meta name="theme-color" content="#171311" id="theme-color" />
     <meta name="color-scheme" content="dark light" />
     <link rel="icon" type="image/x-icon" href="https://media.navinhill.com/brand/favicon.ico" />
@@ -14,20 +14,20 @@
     <link rel="icon" type="image/png" sizes="16x16" href="https://media.navinhill.com/brand/favicon-dark-16x16.png" media="(prefers-color-scheme: dark)" />
     <link rel="apple-touch-icon" sizes="180x180" href="https://media.navinhill.com/brand/apple-touch-icon.png" />
     <link rel="manifest" href="https://media.navinhill.com/brand/site.webmanifest" />
-    <link rel="canonical" href="https://puzzler.navinhill.com/" />
+    <link rel="canonical" href="https://puzzled.navinhill.com/" />
 
     <!-- Open Graph & Twitter -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Navin Hill" />
-    <meta property="og:title" content="Puzzler — Navin Hill" />
+    <meta property="og:title" content="Puzzled — Navin Hill" />
     <meta property="og:description" content="Choose an original artwork, pick your difficulty, and settle into a quiet jigsaw puzzle." />
-    <meta property="og:url" content="https://puzzler.navinhill.com/" />
+    <meta property="og:url" content="https://puzzled.navinhill.com/" />
     <meta property="og:image" content="https://media.navinhill.com/brand/og-image.png" />
     <meta property="og:image:alt" content="Navin Hill" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Puzzler — Navin Hill" />
+    <meta name="twitter:title" content="Puzzled — Navin Hill" />
     <meta name="twitter:description" content="Choose an original artwork, pick your difficulty, and settle into a quiet jigsaw puzzle." />
     <meta name="twitter:image" content="https://media.navinhill.com/brand/og-image.png" />
 
@@ -85,7 +85,11 @@
     <script>
       (function () {
         try {
-          var saved = JSON.parse(localStorage.getItem("puzzler.theme.v1") || "null");
+          var saved = JSON.parse(
+            localStorage.getItem("puzzled.theme.v1") ||
+            localStorage.getItem("puzzler.theme.v1") ||
+            "null"
+          );
           if (saved && typeof saved.isDark === "boolean") {
             document.documentElement.classList.toggle("dark", saved.isDark);
             document.body.classList.toggle("dark-mode", saved.isDark);

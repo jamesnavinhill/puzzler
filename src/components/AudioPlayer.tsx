@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NAVIN_HILL_ALBUMS, NAVIN_HILL_TRACKS } from '../data/audio';
 
-const VOLUME_KEY = 'puzzler.volume.v1';
+const VOLUME_KEY = 'puzzled.volume.v1';
+const LEGACY_VOLUME_KEY = 'puzzler.volume.v1';
 
 const formatTime = (seconds: number) => {
   if (!Number.isFinite(seconds) || seconds < 0) {
@@ -28,7 +29,9 @@ const AudioPlayer: React.FC = () => {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(() => {
     try {
-      const stored = window.localStorage.getItem(VOLUME_KEY);
+      const stored =
+        window.localStorage.getItem(VOLUME_KEY) ??
+        window.localStorage.getItem(LEGACY_VOLUME_KEY);
       if (stored === null) {
         return 0.5;
       }

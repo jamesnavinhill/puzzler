@@ -1,6 +1,6 @@
-# Puzzler image-model probe — 2026-11-08
+# Puzzled image-model probe — 2026-11-08
 
-Goal: find the model(s) that best replicate the puzzler collection vibe ("vintage
+Goal: find the model(s) that best replicate the puzzled collection vibe ("vintage
 galactic artwork" — 1970s sci-fi/botanical analog collage) for user-facing
 generation, with neuron cost per generation confirmed against Cloudflare's
 GraphQL analytics (`aiInferenceAdaptiveGroups`), not just the pricing page.

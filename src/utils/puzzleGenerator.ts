@@ -96,7 +96,8 @@ export const drawPiecePath = (
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  shape: { top: number; right: number; bottom: number; left: number }
+  shape: { top: number; right: number; bottom: number; left: number },
+  includeOuterEdges = true
 ) => {
   const sz = Math.min(width, height);
   const tabHeight = sz * TAB_SIZE_RATIO;
@@ -106,7 +107,11 @@ export const drawPiecePath = (
 
   // Top Edge
   if (shape.top === 0) {
-    ctx.lineTo(width, 0);
+    if (includeOuterEdges) {
+      ctx.lineTo(width, 0);
+    } else {
+      ctx.moveTo(width, 0);
+    }
   } else {
     // Draw tab
     const mid = width / 2;
@@ -124,7 +129,11 @@ export const drawPiecePath = (
 
   // Right Edge
   if (shape.right === 0) {
-    ctx.lineTo(width, height);
+    if (includeOuterEdges) {
+      ctx.lineTo(width, height);
+    } else {
+      ctx.moveTo(width, height);
+    }
   } else {
     const mid = height / 2;
     const sgn = shape.right;
@@ -139,7 +148,11 @@ export const drawPiecePath = (
 
   // Bottom Edge
   if (shape.bottom === 0) {
-    ctx.lineTo(0, height);
+    if (includeOuterEdges) {
+      ctx.lineTo(0, height);
+    } else {
+      ctx.moveTo(0, height);
+    }
   } else {
     const mid = width / 2;
     const sgn = shape.bottom;
@@ -154,7 +167,11 @@ export const drawPiecePath = (
 
   // Left Edge
   if (shape.left === 0) {
-    ctx.lineTo(0, 0);
+    if (includeOuterEdges) {
+      ctx.lineTo(0, 0);
+    } else {
+      ctx.moveTo(0, 0);
+    }
   } else {
     const mid = height / 2;
     const sgn = shape.left;
@@ -167,5 +184,7 @@ export const drawPiecePath = (
     ctx.lineTo(0, 0);
   }
   
-  ctx.closePath();
+  if (includeOuterEdges) {
+    ctx.closePath();
+  }
 };

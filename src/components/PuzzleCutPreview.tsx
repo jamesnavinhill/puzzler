@@ -58,7 +58,7 @@ const PuzzleCutPreview: React.FC<PuzzleCutPreviewProps> = ({
       ctx.save();
       ctx.translate(piece.correctX, piece.correctY);
       ctx.beginPath();
-      drawPiecePath(ctx, pieceWidth, pieceHeight, piece.shape);
+      drawPiecePath(ctx, pieceWidth, pieceHeight, piece.shape, false);
 
       ctx.lineWidth = 1.25;
       ctx.strokeStyle = cutStroke;

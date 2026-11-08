@@ -84,13 +84,6 @@ const MODEL_CATALOG: Record<string, ModelSpec> = {
   },
 };
 
-/** Used when the request does not name a model. */
-const DEFAULT_MODELS = [
-  '@cf/black-forest-labs/flux-1-schnell',
-  '@cf/bytedance/stable-diffusion-xl-lightning',
-  '@cf/lykon/dreamshaper-8-lcm',
-];
-
 export const maxDuration = 60;
 
 interface GeneratedImage {
@@ -123,54 +116,121 @@ const sniffMimeType = (buffer: Buffer): string => {
   return 'image/jpeg';
 };
 
-const configuredModels = () =>
-  (process.env.CF_IMAGE_MODELS ?? '')
-    .split(',')
-    .map((model) => model.trim())
-    .filter(Boolean);
-
 // --- rate limiting -----------------------------------------------------------
 
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 const RATE_MAX_PER_IP = 8;
 const DAILY_MAX = 200;
+const MAX_TRACKED_IPS = 1000;
 
 const ipWindows = new Map<string, { count: number; start: number }>();
 let dailyCount = { day: '', count: 0 };
 
-const clientIp = (req: VercelRequest): string | null => {
-  const forwarded = req.headers['x-forwarded-for'];
-  const first = Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(',')[0];
-  return first?.trim() || req.headers['x-real-ip']?.toString() || null;
+const pruneExpiredWindows = (now: number): void => {
+  if (ipWindows.size < MAX_TRACKED_IPS) return;
+  for (const [key, val] of ipWindows) {
+    if (now - val.start > RATE_WINDOW_MS) {
+      ipWindows.delete(key);
+    }
+  }
+  if (ipWindows.size >= MAX_TRACKED_IPS) {
+    let toRemove = Math.floor(MAX_TRACKED_IPS * 0.2);
+    for (const key of ipWindows.keys()) {
+      ipWindows.delete(key);
+      if (--toRemove <= 0) break;
+    }
+  }
 };
 
-const rateLimited = (req: VercelRequest): { limited: boolean; retryAfterSec: number } => {
+const getHeaderString = (val: string | string[] | undefined): string | null => {
+  if (!val) return null;
+  const str = Array.isArray(val) ? val[0] : val;
+  return str ? str.trim() : null;
+};
+
+const clientIp = (req: VercelRequest): string | null => {
+  // Cloudflare edge header (unforgeable by external clients when proxied through Cloudflare)
+  const cfIp = getHeaderString(req.headers['cf-connecting-ip']);
+  if (cfIp) return cfIp;
+
+  // Vercel edge header
+  const realIp = getHeaderString(req.headers['x-real-ip']);
+  if (realIp) return realIp;
+
+  const vercelForwarded = getHeaderString(req.headers['x-vercel-forwarded-for']);
+  if (vercelForwarded) return vercelForwarded.split(',')[0].trim();
+
+  // General X-Forwarded-For fallback
+  const forwarded = getHeaderString(req.headers['x-forwarded-for']);
+  if (forwarded) return forwarded.split(',')[0].trim();
+
+  return null;
+};
+
+interface RateLimitResult {
+  limited: boolean;
+  retryAfterSec: number;
+  remaining: number;
+  limit: number;
+}
+
+const checkRateLimit = (req: VercelRequest): RateLimitResult => {
   const ip = clientIp(req);
   if (!ip) {
-    return { limited: false, retryAfterSec: 0 }; // local dev has no forwarding header
+    return { limited: false, retryAfterSec: 0, remaining: RATE_MAX_PER_IP, limit: RATE_MAX_PER_IP };
   }
 
   const now = Date.now();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(now).toISOString().slice(0, 10);
+  if (dailyCount.day !== today) {
+    dailyCount = { day: today, count: 0 };
+  }
+
+  if (dailyCount.count >= DAILY_MAX) {
+    const midnightUtc = new Date(`${today}T00:00:00Z`).getTime() + 86400 * 1000;
+    const retryAfterSec = Math.max(1, Math.ceil((midnightUtc - now) / 1000));
+    return { limited: true, retryAfterSec, remaining: 0, limit: RATE_MAX_PER_IP };
+  }
+
+  pruneExpiredWindows(now);
+  const window = ipWindows.get(ip);
+  if (!window || now - window.start > RATE_WINDOW_MS) {
+    return { limited: false, retryAfterSec: 0, remaining: RATE_MAX_PER_IP, limit: RATE_MAX_PER_IP };
+  }
+
+  if (window.count >= RATE_MAX_PER_IP) {
+    const retryAfterSec = Math.max(1, Math.ceil((window.start + RATE_WINDOW_MS - now) / 1000));
+    return { limited: true, retryAfterSec, remaining: 0, limit: RATE_MAX_PER_IP };
+  }
+
+  return {
+    limited: false,
+    retryAfterSec: 0,
+    remaining: Math.max(0, RATE_MAX_PER_IP - window.count),
+    limit: RATE_MAX_PER_IP,
+  };
+};
+
+const consumeRateLimit = (req: VercelRequest): void => {
+  const ip = clientIp(req);
+  if (!ip) return;
+
+  const now = Date.now();
+  const today = new Date(now).toISOString().slice(0, 10);
   if (dailyCount.day !== today) {
     dailyCount = { day: today, count: 0 };
   }
   dailyCount.count += 1;
-  if (dailyCount.count > DAILY_MAX) {
-    return { limited: true, retryAfterSec: Math.ceil((86400 * 1000 - (now - new Date(`${today}T00:00:00Z`).getTime())) / 1000) };
-  }
 
   const window = ipWindows.get(ip);
   if (!window || now - window.start > RATE_WINDOW_MS) {
+    if (ipWindows.size >= MAX_TRACKED_IPS) {
+      pruneExpiredWindows(now);
+    }
     ipWindows.set(ip, { count: 1, start: now });
-    return { limited: false, retryAfterSec: 0 };
+  } else {
+    window.count += 1;
   }
-
-  window.count += 1;
-  if (window.count > RATE_MAX_PER_IP) {
-    return { limited: true, retryAfterSec: Math.ceil((window.start + RATE_WINDOW_MS - now) / 1000) };
-  }
-  return { limited: false, retryAfterSec: 0 };
 };
 
 // --- upstream calls ----------------------------------------------------------
@@ -324,14 +384,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { limited, retryAfterSec } = rateLimited(req);
-  if (limited) {
-    res.setHeader('Retry-After', String(Math.max(retryAfterSec, 1)));
-    return res.status(429).json({
-      error: 'Generation limit reached. Please try again a bit later.',
-    });
-  }
-
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const apiToken = process.env.CLOUDFLARE_API_TOKEN;
   if (!accountId || !apiToken) {
@@ -344,88 +396,96 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'A prompt is required.' });
   }
 
+  const rateCheck = checkRateLimit(req);
+  if (rateCheck.limited) {
+    res.setHeader('Retry-After', String(Math.max(rateCheck.retryAfterSec, 1)));
+    return res.status(429).json({
+      error: 'Generation limit reached. Please try again a bit later.',
+    });
+  }
+
+  consumeRateLimit(req);
+  res.setHeader('RateLimit-Limit', String(rateCheck.limit));
+  res.setHeader('RateLimit-Remaining', String(Math.max(0, rateCheck.remaining - 1)));
+
   const reference = decodeReferenceImage(body.referenceImage);
 
-  // Explicit model: honor size/step options with per-model validation.
-  const modelKey = typeof body.model === 'string' ? body.model.trim() : '';
-  if (modelKey) {
-    const spec = MODEL_CATALOG[modelKey];
-    if (!spec) {
-      return res.status(400).json({ error: `Unknown model "${modelKey}".` });
-    }
-
-    const clampSide = (value: unknown): number | undefined => {
-      const n = typeof value === 'number' ? value : Number.parseInt(String(value ?? ''), 10);
-      if (!Number.isFinite(n)) return undefined;
-      if (spec.fixedSide) return spec.fixedSide;
-      const min = spec.minSide ?? 256;
-      const max = spec.maxSide ?? 1920;
-      return Math.min(max, Math.max(min, Math.round(n)));
-    };
-
-    const width = clampSide(body.width);
-    const height = clampSide(body.height);
-
-    let steps: number | undefined;
-    if (spec.fixedSteps) {
-      steps = spec.fixedSteps;
-    } else if (spec.steps) {
-      const requested = typeof body.steps === 'number' ? body.steps : Number.parseInt(String(body.steps ?? ''), 10);
-      steps = Number.isFinite(requested)
-        ? Math.min(spec.steps.max, Math.max(spec.steps.min, requested))
-        : spec.steps.default;
-    }
-
-    const guidance =
-      typeof body.guidance === 'number' && body.guidance > 0 ? body.guidance : undefined;
-    const seed =
-      typeof body.seed === 'number' && Number.isInteger(body.seed) && body.seed >= 0
-        ? body.seed
-        : undefined;
-
-    try {
-      const generated = await runModel(spec.id, prompt, accountId, apiToken, {
-        width,
-        height,
-        steps,
-        guidance,
-        seed,
-        reference: reference ?? undefined,
-        binaryResponse: spec.binaryResponse,
-        fixedSteps: spec.fixedSteps,
-      });
-      return res.status(200).json({
-        imageB64: generated.b64,
-        mimeType: generated.mimeType,
-        model: spec.id,
-        ...(generated.neurons !== undefined ? { neurons: generated.neurons } : {}),
-      });
-    } catch (error) {
-      console.error('generate:', error instanceof Error ? error.message : error);
-      return res.status(502).json({ error: 'Image generation failed. Try again.' });
-    }
+  // Default to klein-4b if model is omitted or unspecified.
+  const effectiveModelKey = (typeof body.model === 'string' ? body.model.trim() : '') || 'klein-4b';
+  const spec = MODEL_CATALOG[effectiveModelKey];
+  if (!spec) {
+    return res.status(400).json({ error: `Unknown model "${effectiveModelKey}".` });
   }
 
-  // Legacy chain: try each configured model in order.
-  const models = configuredModels();
-  const chain = models.length > 0 ? models : DEFAULT_MODELS;
-  let lastError: unknown = null;
+  const clampSide = (value: unknown): number | undefined => {
+    const n = typeof value === 'number' ? value : Number.parseInt(String(value ?? ''), 10);
+    if (!Number.isFinite(n)) return undefined;
+    if (spec.fixedSide) return spec.fixedSide;
+    const min = spec.minSide ?? 256;
+    const max = spec.maxSide ?? 1920;
+    return Math.min(max, Math.max(min, Math.round(n)));
+  };
 
-  for (const model of chain) {
-    try {
-      const generated = await runModel(model, prompt, accountId, apiToken);
-      return res.status(200).json({
-        imageB64: generated.b64,
-        mimeType: generated.mimeType,
-        model,
-        ...(generated.neurons !== undefined ? { neurons: generated.neurons } : {}),
-      });
-    } catch (error) {
-      lastError = error;
-      console.error('generate:', error instanceof Error ? error.message : error);
-    }
+  const width = clampSide(body.width) ?? (spec.fixedSide ? spec.fixedSide : 1024);
+  const height = clampSide(body.height) ?? (spec.fixedSide ? spec.fixedSide : 1024);
+
+  let steps: number | undefined;
+  if (spec.fixedSteps) {
+    steps = spec.fixedSteps;
+  } else if (spec.steps) {
+    const requested = typeof body.steps === 'number' ? body.steps : Number.parseInt(String(body.steps ?? ''), 10);
+    steps = Number.isFinite(requested)
+      ? Math.min(spec.steps.max, Math.max(spec.steps.min, requested))
+      : spec.steps.default;
   }
 
-  console.error('generate: all models failed', lastError);
-  return res.status(502).json({ error: 'Image generation failed. Try again.' });
+  const guidance =
+    typeof body.guidance === 'number' && body.guidance > 0 ? body.guidance : undefined;
+  const seed =
+    typeof body.seed === 'number' && Number.isInteger(body.seed) && body.seed >= 0
+      ? body.seed
+      : undefined;
+
+  try {
+    const generated = await runModel(spec.id, prompt, accountId, apiToken, {
+      width,
+      height,
+      steps,
+      guidance,
+      seed,
+      reference: reference ?? undefined,
+      binaryResponse: spec.binaryResponse,
+      fixedSteps: spec.fixedSteps,
+    });
+    const neurons =
+      generated.neurons ??
+      (effectiveModelKey === 'klein-4b' ? (reference ? 110 : 104) : effectiveModelKey === 'schnell' ? 173 : undefined);
+    return res.status(200).json({
+      imageB64: generated.b64,
+      mimeType: generated.mimeType,
+      model: spec.id,
+      ...(neurons !== undefined ? { neurons } : {}),
+    });
+  } catch (primaryError) {
+    console.error(`generate: ${effectiveModelKey} failed:`, primaryError instanceof Error ? primaryError.message : primaryError);
+
+    // If klein-4b failed, fall back to schnell only
+    if (effectiveModelKey === 'klein-4b') {
+      try {
+        console.warn('generate: falling back to flux-1-schnell...');
+        const fallback = await runModel(MODEL_CATALOG.schnell.id, prompt, accountId, apiToken);
+        return res.status(200).json({
+          imageB64: fallback.b64,
+          mimeType: fallback.mimeType,
+          model: MODEL_CATALOG.schnell.id,
+          neurons: fallback.neurons ?? 173,
+          fallback: true,
+        });
+      } catch (fallbackError) {
+        console.error('generate: schnell fallback also failed:', fallbackError instanceof Error ? fallbackError.message : fallbackError);
+      }
+    }
+
+    return res.status(502).json({ error: 'Image generation failed. Try again.' });
+  }
 }

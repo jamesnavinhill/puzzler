@@ -234,8 +234,12 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
       onComplete();
     };
 
+    window.addEventListener('puzzled:autosolve', handleAutoSolve);
     window.addEventListener('puzzler:autosolve', handleAutoSolve);
-    return () => window.removeEventListener('puzzler:autosolve', handleAutoSolve);
+    return () => {
+      window.removeEventListener('puzzled:autosolve', handleAutoSolve);
+      window.removeEventListener('puzzler:autosolve', handleAutoSolve);
+    };
   }, [onComplete, onProgressChange, pieces.length]);
 
   const render = useCallback(() => {

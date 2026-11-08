@@ -1,5 +1,5 @@
 /**
- * Puzzler model probe harness.
+ * Puzzled model probe harness.
  *
  * Runs one generation against Cloudflare Workers AI and records the result.
  * Usage:

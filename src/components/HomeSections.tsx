@@ -1,6 +1,7 @@
 import React from 'react';
 import FileUpload from './FileUpload';
 import BrandMark from './BrandMark';
+import { ModelKey, ModelPickerButton } from './ModelPickerButton';
 import { GalleryImage, galleryImages } from '../data/gallery.generated';
 
 interface HomeSectionsProps {
@@ -11,6 +12,8 @@ interface HomeSectionsProps {
   onGenerateAi: () => void;
   isGenerating: boolean;
   isProcessing: boolean;
+  selectedModel: ModelKey;
+  onSelectedModelChange: (model: ModelKey) => void;
 }
 
 const STEPS = ['Choose your art', 'Select a cut', 'Put it together!'];
@@ -23,6 +26,8 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
   onGenerateAi,
   isGenerating,
   isProcessing,
+  selectedModel,
+  onSelectedModelChange,
 }) => {
   return (
     <div className="relative z-10">
@@ -61,11 +66,11 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
         <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
           <h2
             id="create-title"
-            className="flex flex-wrap items-baseline justify-center gap-x-6 gap-y-3 text-center text-[clamp(1.05rem,3.2vw,1.75rem)] font-semibold leading-none tracking-[-0.04em] text-ink sm:gap-x-9"
+            className="flex flex-wrap items-baseline justify-center gap-x-8 gap-y-3 text-center text-[clamp(1.35rem,3.4vw,2.2rem)] font-semibold leading-tight tracking-[-0.035em] text-ink sm:gap-x-12"
           >
             {STEPS.map((step, index) => (
-              <span key={step} className="inline-flex items-baseline gap-2">
-                <span className="text-[0.78em] font-bold tabular-nums text-accent">
+              <span key={step} className="inline-flex items-baseline gap-2.5">
+                <span className="text-[0.82em] font-bold tabular-nums text-accent">
                   0{index + 1}
                 </span>
                 <span>{step}</span>
@@ -73,12 +78,14 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
             ))}
           </h2>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:gap-5">
-            <div className="flex flex-col rounded-2xl border border-line bg-panel/55 p-4 sm:p-5">
-              <h3 className="text-sm font-semibold text-ink">Start from your own image.</h3>
-              <p className="mt-1 text-xs leading-relaxed text-muted">
-                Drop a JPG, PNG, or WebP. It stays on your device.
-              </p>
+          <div className="mx-auto mt-10 grid max-w-4xl gap-4 sm:gap-5 md:grid-cols-2">
+            <div className="flex min-h-[13.5rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
+              <div>
+                <h3 className="text-sm font-semibold text-ink">Start from your own image.</h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  Drop a JPG, PNG, or WebP. It stays on your device.
+                </p>
+              </div>
 
               <div className="mt-4">
                 {isProcessing ? (
@@ -92,11 +99,13 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-col rounded-2xl border border-line bg-panel/55 p-4 sm:p-5">
-              <h3 className="text-sm font-semibold text-ink">Or make one with AI.</h3>
-              <p className="mt-1 text-xs leading-relaxed text-muted">
-                Describe a scene and we&apos;ll generate the artwork.
-              </p>
+            <div className="flex min-h-[13.5rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
+              <div>
+                <h3 className="text-sm font-semibold text-ink">Or make one with AI.</h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  Describe a scene and we&apos;ll generate the artwork.
+                </p>
+              </div>
 
               <div className="mt-4 flex items-center gap-2">
                 <label htmlFor="ai-prompt" className="sr-only">
@@ -115,11 +124,15 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                   placeholder="A greenhouse on a winter night…"
                   className="h-12 min-w-0 flex-1 rounded-xl border border-line bg-canvas/55 px-3.5 text-sm text-ink placeholder:text-muted/60 focus:border-accent/70 focus:outline-none"
                 />
+                <ModelPickerButton
+                  selectedModel={selectedModel}
+                  onModelChange={onSelectedModelChange}
+                />
                 <button
                   type="button"
                   onClick={onGenerateAi}
                   disabled={!aiPrompt.trim() || isGenerating}
-                  className="inline-flex h-12 shrink-0 items-center gap-2 rounded-xl bg-accent px-5 text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-12 shrink-0 items-center gap-2 rounded-xl bg-accent px-4 sm:px-5 text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isGenerating ? (
                     <>
@@ -140,7 +153,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex items-center gap-3">
             <BrandMark className="h-7 w-auto" />
-            <span className="text-xs text-muted">Puzzler by Navin Hill</span>
+            <span className="text-xs text-muted">Puzzled by Navin Hill</span>
           </div>
 
           <nav className="flex items-center gap-5 text-xs font-medium text-muted">

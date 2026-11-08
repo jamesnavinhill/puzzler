@@ -1,12 +1,14 @@
-# Puzzler — session handoff (2026-11-08)
+# Puzzled — session handoff (2026-11-08)
 
-Where things stand, for whoever picks this up.
+Where things stand, for whoever picks this up. The app is **Puzzled by Navin Hill** (live at https://puzzled.navinhill.com; previously Puzzler).
 
 ## State of the code
 
 **`api/generate.ts`** (deployed to prod 2026-11-08):
 - All six models wired behind a `model` request param: `klein-9b`, `klein-4b`, `flux-2-dev` (multipart + optional `referenceImage`), `lucid-origin`, `phoenix-1.0`, `schnell` (JSON). Per-model size clamps (note: klein-9b capped at 1792 — text-only 1920² 500s deterministically), step/guidance/seed pass-through with validation.
-- No `model` param → legacy chain unchanged (schnell → sdxl-lightning → dreamshaper), so the current deployed frontend keeps working untouched.
+- **Default Engine**: **`klein-4b`** (`@cf/black-forest-labs/flux-2-klein-4b`) at 1024² (fixed 4-step schedule, ~104 neurons / $0.0011).
+- **Fallback**: Strictly **`schnell`** (`@cf/black-forest-labs/flux-1-schnell`, ~173 neurons / $0.0019) if klein-4b fails. Legacy SDXL Lightning and Dreamshaper have been retired.
+- **Neuron Counter**: Live tracker in the UI (`puzzled.neurons.v1`, resets daily UTC with customizable budget) that deducts actual neurons per generation.
 - Rate-limit guard: in-memory 8/h per IP + 200/day per instance, `429 + Retry-After`. Zero frontend changes needed (App.tsx already surfaces JSON `error`).
 - The inert AI Gateway block was removed (2026-11-08): `gatewayHeader()` / `CF_AIG_GATEWAY_ID` no longer exist; every call hits Workers AI directly. Standing decision: **Workers AI only — no AI Gateway, no jami.studio account.**
 - Deps: `@vercel/node` 23→30 + npm overrides (`@fastify/busboy`, `ajv`, `glob`, `minimatch`, `path-to-regexp`, `undici`) — **0 npm vulnerabilities** (2026-11-08, commit `02dc18c`).
@@ -37,6 +39,13 @@ Verdicts James signed off on: **klein-4b = default engine** (premium tiers indis
 - An AI Gateway was created and deleted on `5fda12e0` (audit log: created 12:41:55Z, deleted 12:48:42Z; exactly one request through it, 172.8 n ≈ $0.002). **James flagged possible Enterprise-contract billing sensitivity** (minimum charge / credit lockout). Audit timestamps + a reversal note were provided in-session; James should confirm the invoice and loop in the CF account team. Standing rule recorded: **no resource creation on any account without explicit approval.**
 - Platform fact that stands regardless: Workers AI has no hard spend cap; the only $-denominated cap in CF's catalog is AI Gateway spend limits (dashboard-only, beta) — which James rejected. So the hard-cap conversation is closed unless he reopens it.
 
+## Scoped Workers AI Key (Minted & Deployed 2026-11-08)
+
+- **Token Name**: `puzzled-workers-ai-runner` (ID: `7bb7c6cf0299bc1cf63be842a9f2e52c`)
+- **Scope**: Strictly `Workers AI Read` (`a92d2450e05d4e7bb7d0a64968f83d11` — invoke models only).
+- **Access Restrictions**: Zero access to billing, zero access to account settings, zero access to user/token management, zero zone mutation.
+- **Vercel**: Old unverified token deleted and replaced with this scoped token on Production & Preview environments.
+
 ## Spend guard — what's active
 
 - In-app limiter (above) — active in code, deploys with the next build.
@@ -46,7 +55,7 @@ Verdicts James signed off on: **klein-4b = default engine** (premium tiers indis
 
 1. Handler live + verified (2026-11-08). The UI thread's WIP is also live (swept into `02dc18c`; git-connected deploy) — prod now runs exactly what was in the working tree.
 2. Frontend wiring (when UI thread is ready): model picker + optional reference upload (client must downscale refs to <512×512 — CDN thumbs are 640², use ffmpeg or canvas).
-3. Verify live via `https://puzzler.navinhill.com/api/generate` only (vercel.app URLs are SSO-401).
+3. Verify live via `https://puzzled.navinhill.com/api/generate` only (vercel.app URLs are SSO-401).
 4. CF dash (James): usage notifications at budget thresholds; confirm token scope is Workers AI run-only; invoice check re: gateway.
 
 ## Tooling notes (gotchas that cost time)
