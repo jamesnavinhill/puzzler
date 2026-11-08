@@ -238,57 +238,14 @@ const App: React.FC = () => {
     <div className="flex h-full flex-col bg-canvas text-ink">
       <header className="relative z-30 shrink-0 border-b border-line bg-canvas/85 backdrop-blur-xl">
         <div className="mx-auto grid h-16 w-full max-w-[1600px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 sm:gap-3 sm:px-5">
-          <div className="flex items-center justify-self-start gap-0.5 sm:gap-1">
-            <button
-              type="button"
-              onClick={resetGame}
-              className="group flex shrink-0 items-center rounded-xl text-left"
-              aria-label="Puzzler home"
-            >
-              <BrandMark className="h-7 w-auto sm:h-8" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() =>
-                setTheme((current) => ({ ...current, isDark: !current.isDark }))
-              }
-              className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-accent sm:h-9 sm:w-9"
-              aria-label={theme.isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme.isDark ? (
-                <svg
-                  className="h-[18px] w-[18px]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="4" strokeWidth="1.8" />
-                  <path
-                    strokeLinecap="round"
-                    strokeWidth="1.8"
-                    d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="h-[18px] w-[18px]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                    d="M20.35 15.35A9 9 0 018.65 3.65 9 9 0 1012 21a9 9 0 008.35-5.65z"
-                  />
-                </svg>
-              )}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={resetGame}
+            className="group flex shrink-0 items-center justify-self-start rounded-xl text-left"
+            aria-label="Puzzler home"
+          >
+            <BrandMark className="h-7 w-auto sm:h-8" />
+          </button>
 
           <div className="min-w-0 justify-self-center">
             <AudioPlayer />
@@ -333,6 +290,47 @@ const App: React.FC = () => {
                 </svg>
               </button>
             )}
+
+            <button
+              type="button"
+              onClick={() =>
+                setTheme((current) => ({ ...current, isDark: !current.isDark }))
+              }
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-accent sm:h-9 sm:w-9"
+              aria-label={theme.isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme.isDark ? (
+                <svg
+                  className="h-[18px] w-[18px]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="4" strokeWidth="1.8" />
+                  <path
+                    strokeLinecap="round"
+                    strokeWidth="1.8"
+                    d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="h-[18px] w-[18px]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.8"
+                    d="M20.35 15.35A9 9 0 018.65 3.65 9 9 0 1012 21a9 9 0 008.35-5.65z"
+                  />
+                </svg>
+              )}
+            </button>
 
             <ThemeCustomizer config={theme} onChange={setTheme} />
           </div>
