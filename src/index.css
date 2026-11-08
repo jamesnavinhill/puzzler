@@ -99,6 +99,32 @@
   animation: soft-pulse 5s ease-in-out infinite;
 }
 
+@keyframes title-scroll {
+  0%,
+  8% {
+    transform: translateX(0);
+  }
+  45%,
+  82% {
+    transform: translateX(var(--title-shift, 0px));
+  }
+  92%,
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.title-marquee {
+  animation: title-scroll 60s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-marquee {
+    animation: none;
+  }
+}
+
 /* Lift the carousel toward the viewport center without letting it crowd the
    headline on shorter screens. */
 .hero-carousel-lift {
@@ -137,6 +163,55 @@
   border-radius: 999px;
   background: var(--accent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+  cursor: pointer;
+}
+
+.hue-range {
+  background: linear-gradient(
+    to right,
+    #f45b5b,
+    #f4d65b,
+    #7bd47b,
+    #5bd9d4,
+    #6b8ff4,
+    #c76bf4,
+    #f45b8e,
+    #f45b5b
+  );
+}
+
+.hue-range::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.hue-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -3px;
+  border: 2px solid var(--app-panel);
+  border-radius: 999px;
+  background: #fffaf1;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 2px 5px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.hue-range::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.hue-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--app-panel);
+  border-radius: 999px;
+  background: #fffaf1;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 2px 5px rgba(0, 0, 0, 0.25);
   cursor: pointer;
 }
 

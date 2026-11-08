@@ -15,7 +15,11 @@ const formatTime = (seconds: number) => {
 const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const autoplayRef = useRef(false);
+  const titleViewportRef = useRef<HTMLSpanElement>(null);
+  const titleTextRef = useRef<HTMLSpanElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [titleOverflows, setTitleOverflows] = useState(false);
+  const [titleShift, setTitleShift] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -39,10 +43,36 @@ const AudioPlayer: React.FC = () => {
   const currentAlbum = NAVIN_HILL_ALBUMS.find(
     (album) => album.id === currentTrack.albumId
   );
+  const displayTitle = hasError ? 'Stream unavailable' : currentTrack.title;
   const trackIndexById = useMemo(
     () => new Map(NAVIN_HILL_TRACKS.map((track, index) => [track.id, index])),
     []
   );
+
+  useEffect(() => {
+    const viewport = titleViewportRef.current;
+    const text = titleTextRef.current;
+    if (!viewport || !text) {
+      return;
+    }
+
+    const measure = () => {
+      const overflow = text.scrollWidth - viewport.clientWidth;
+      setTitleOverflows(overflow > 1);
+      setTitleShift(overflow > 1 ? overflow + 8 : 0);
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);
+    window.addEventListener('resize', measure);
+    void document.fonts?.ready.then(measure).catch(() => undefined);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [displayTitle]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -171,7 +201,7 @@ const AudioPlayer: React.FC = () => {
   };
 
   return (
-    <div className="relative flex min-w-0 max-w-full items-center justify-center">
+    <div className="relative">
       <audio
         ref={audioRef}
         src={currentTrack.src}
@@ -196,30 +226,39 @@ const AudioPlayer: React.FC = () => {
         }}
       />
 
-      <div className="relative flex min-w-0 max-w-full items-center rounded-full border border-line bg-panel/85 py-1 pl-3 pr-1.5 shadow-sm backdrop-blur-xl">
+      <div className="grid w-[clamp(9rem,50vw,13.5rem)] shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 rounded-full border border-line bg-panel/85 p-1.5 shadow-sm backdrop-blur-xl sm:w-[22rem] md:w-[27rem] lg:w-[30rem]">
         <button
           type="button"
           onClick={() => setShowQueue((open) => !open)}
-          className="group flex min-w-0 items-center rounded-full py-0.5 pr-1 text-left"
+          className="group min-w-0 justify-self-stretch rounded-full px-2 py-0.5 text-left"
           aria-label="Open Navin Hill playlist"
           aria-expanded={showQueue}
           aria-haspopup="dialog"
           title="Open playlist"
         >
-          <span className="min-w-0">
-            <span className="block max-w-[9rem] truncate text-[11px] font-semibold leading-tight text-ink transition-colors group-hover:text-accent sm:max-w-[10rem]">
-              {hasError ? 'Stream unavailable' : currentTrack.title}
+          <span className="block min-w-0">
+            <span ref={titleViewportRef} className="block overflow-hidden whitespace-nowrap">
+              <span
+                key={currentTrack.id}
+                ref={titleTextRef}
+                className={`inline-block text-[11px] font-semibold leading-tight text-ink transition-colors group-hover:text-accent ${
+                  titleOverflows ? 'title-marquee' : ''
+                }`}
+                style={{ '--title-shift': `-${titleShift}px` } as React.CSSProperties}
+              >
+                {displayTitle}
+              </span>
             </span>
-            <span className="mt-0.5 block max-w-[9rem] truncate text-[10px] leading-tight text-muted transition-colors group-hover:text-ink sm:max-w-[10rem]">
+            <span className="mt-0.5 block truncate text-[10px] leading-tight text-muted transition-colors group-hover:text-ink">
               {currentTrack.album} · {currentTrack.trackNumber}/
               {currentAlbum?.tracks.length ?? 0}
             </span>
           </span>
         </button>
 
-        <span className="mx-1 h-5 w-px shrink-0 bg-line/70" aria-hidden="true" />
+        <div className="flex shrink-0 items-center justify-center gap-0.5">
+          <span className="hidden h-5 w-px bg-line/70 md:block" aria-hidden="true" />
 
-        <div className="flex shrink-0 items-center gap-0.5">
           <button
             type="button"
             onClick={playPrevious}
@@ -263,9 +302,11 @@ const AudioPlayer: React.FC = () => {
               <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
             </svg>
           </button>
+
+          <span className="hidden h-5 w-px bg-line/70 md:block" aria-hidden="true" />
         </div>
 
-        <div className="ml-1 hidden shrink-0 items-center gap-1 border-l border-line/70 pl-2 pr-0.5 md:flex">
+        <div className="hidden min-w-0 items-center justify-end gap-1 pl-1 md:flex">
           <button
             type="button"
             onClick={() => setVolume((value) => (value > 0 ? 0 : 0.5))}
