@@ -247,7 +247,11 @@ const App: React.FC = () => {
             <BrandMark className="h-7 w-auto sm:h-8" />
           </button>
 
-          <div className="min-w-0 justify-self-center">
+          <div
+            className={`min-w-0 justify-self-center transition-opacity duration-300 ${
+              gameState === 'home' ? 'invisible opacity-0' : 'opacity-100'
+            }`}
+          >
             <AudioPlayer />
           </div>
 
