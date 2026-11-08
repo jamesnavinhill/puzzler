@@ -230,14 +230,19 @@ const AudioPlayer: React.FC = () => {
         <button
           type="button"
           onClick={() => setShowQueue((open) => !open)}
-          className="group min-w-0 justify-self-stretch rounded-full px-2 py-0.5 text-left"
+          className="group min-w-0 justify-self-stretch rounded-full px-2 py-0.5 text-center"
           aria-label="Open Navin Hill playlist"
           aria-expanded={showQueue}
           aria-haspopup="dialog"
           title="Open playlist"
         >
           <span className="block min-w-0">
-            <span ref={titleViewportRef} className="block overflow-hidden whitespace-nowrap">
+            <span
+              ref={titleViewportRef}
+              className={`block overflow-hidden whitespace-nowrap ${
+                titleOverflows ? 'text-left' : 'text-center'
+              }`}
+            >
               <span
                 key={currentTrack.id}
                 ref={titleTextRef}
@@ -306,7 +311,7 @@ const AudioPlayer: React.FC = () => {
           <span className="hidden h-5 w-px bg-line/70 md:block" aria-hidden="true" />
         </div>
 
-        <div className="hidden min-w-0 items-center justify-end gap-1 pl-1 md:flex">
+        <div className="hidden min-w-0 items-center justify-center gap-1 md:flex">
           <button
             type="button"
             onClick={() => setVolume((value) => (value > 0 ? 0 : 0.5))}
