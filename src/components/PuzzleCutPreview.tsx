@@ -50,8 +50,8 @@ const PuzzleCutPreview: React.FC<PuzzleCutPreviewProps> = ({
       .trim();
     const accentMatch = /hsl\(([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/.exec(accentValue);
     const cutStroke = accentMatch
-      ? `hsla(${accentMatch[1]}, ${accentMatch[2]}%, ${accentMatch[3]}%, 0.5)`
-      : 'rgba(255, 248, 236, 0.55)';
+      ? `hsla(${accentMatch[1]}, ${accentMatch[2]}%, ${accentMatch[3]}%, 0.72)`
+      : 'rgba(255, 248, 236, 0.7)';
 
     ctx.lineJoin = 'round';
     pieces.forEach((piece) => {
@@ -60,7 +60,7 @@ const PuzzleCutPreview: React.FC<PuzzleCutPreviewProps> = ({
       ctx.beginPath();
       drawPiecePath(ctx, pieceWidth, pieceHeight, piece.shape);
 
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.25;
       ctx.strokeStyle = cutStroke;
       ctx.stroke();
       ctx.restore();
