@@ -63,93 +63,77 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
 
       <section className="border-t border-line/70" aria-labelledby="create-title">
         <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
+          <h2
+            id="create-title"
+            className="flex items-baseline gap-x-3 whitespace-nowrap text-[clamp(0.8rem,3.2vw,1.75rem)] font-semibold leading-none tracking-[-0.04em] text-ink sm:gap-x-6"
+          >
+            {STEPS.map((step, index) => (
+              <span key={step} className="inline-flex items-baseline gap-1.5">
+                <span className="text-[0.78em] font-bold tabular-nums text-accent">
+                  0{index + 1}
+                </span>
+                <span>{step}</span>
+              </span>
+            ))}
+          </h2>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:gap-5">
             <div>
-              <h2
-                id="create-title"
-                className="max-w-lg text-3xl font-semibold leading-[1.08] tracking-[-0.04em] text-ink sm:text-4xl"
-              >
-                A slow evening, one piece at a time.
-              </h2>
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-                Every puzzle starts with a Navin Hill original — or an image of your
-                own. Pick 25, 100, or 250 pieces. No timers, no scores — just the
-                art, the music, and the quiet work of putting it back together.
+              <h3 className="text-sm font-semibold text-ink">Start from your own image.</h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted">
+                Drop a JPG, PNG, or WebP. It stays on your device.
               </p>
 
-              <ol
-                aria-label="How a puzzle comes together"
-                className="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-line/70 pt-5 text-xs text-muted"
-              >
-                {STEPS.map((step, index) => (
-                  <li key={step} className="flex items-center gap-2">
-                    <span className="text-[10px] font-semibold tabular-nums text-accent">
-                      0{index + 1}
-                    </span>
-                    <span>{step}</span>
-                  </li>
-                ))}
-              </ol>
+              <div className="mt-3">
+                {isProcessing ? (
+                  <div className="flex h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-panel/40">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-accent" />
+                    <p className="text-xs font-semibold text-ink">Preparing your image</p>
+                  </div>
+                ) : (
+                  <FileUpload compact onImageSelect={onImageSelect} />
+                )}
+              </div>
             </div>
 
-            <div className="grid gap-4">
-              <div>
-                <h3 className="text-sm font-semibold text-ink">Start from your own image.</h3>
-                <p className="mt-1 text-xs leading-relaxed text-muted">
-                  Drop a JPG, PNG, or WebP. It stays on your device.
-                </p>
+            <div className="rounded-2xl border border-line bg-panel/55 p-4 sm:p-5">
+              <h3 className="text-sm font-semibold text-ink">Or make one with AI.</h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted">
+                Describe a scene and we&apos;ll generate the artwork.
+              </p>
 
-                <div className="mt-3">
-                  {isProcessing ? (
-                    <div className="flex h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-panel/40">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-accent" />
-                      <p className="text-xs font-semibold text-ink">Preparing your image</p>
-                    </div>
+              <div className="mt-4 flex items-center gap-2">
+                <label htmlFor="ai-prompt" className="sr-only">
+                  Describe the image to generate
+                </label>
+                <input
+                  id="ai-prompt"
+                  value={aiPrompt}
+                  maxLength={300}
+                  onChange={(event) => onAiPromptChange(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      onGenerateAi();
+                    }
+                  }}
+                  placeholder="A greenhouse on a winter night…"
+                  className="min-w-0 flex-1 rounded-xl border border-line bg-canvas/55 px-3.5 py-3 text-sm text-ink placeholder:text-muted/60 focus:border-accent/70 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={onGenerateAi}
+                  disabled={!aiPrompt.trim() || isGenerating}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {isGenerating ? (
+                    <>
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-on-accent/30 border-t-on-accent" />
+                      Making
+                    </>
                   ) : (
-                    <FileUpload compact onImageSelect={onImageSelect} />
+                    'Generate'
                   )}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-line bg-panel/55 p-4 sm:p-5">
-                <h3 className="text-sm font-semibold text-ink">Or make one with AI.</h3>
-                <p className="mt-1 text-xs leading-relaxed text-muted">
-                  Describe a scene and we&apos;ll generate the artwork.
-                </p>
-
-                <div className="mt-4 flex items-center gap-2">
-                  <label htmlFor="ai-prompt" className="sr-only">
-                    Describe the image to generate
-                  </label>
-                  <input
-                    id="ai-prompt"
-                    value={aiPrompt}
-                    maxLength={300}
-                    onChange={(event) => onAiPromptChange(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        onGenerateAi();
-                      }
-                    }}
-                    placeholder="A greenhouse on a winter night…"
-                    className="min-w-0 flex-1 rounded-xl border border-line bg-canvas/55 px-3.5 py-3 text-sm text-ink placeholder:text-muted/60 focus:border-accent/70 focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={onGenerateAi}
-                    disabled={!aiPrompt.trim() || isGenerating}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-on-accent/30 border-t-on-accent" />
-                        Making
-                      </>
-                    ) : (
-                      'Generate'
-                    )}
-                  </button>
-                </div>
+                </button>
               </div>
             </div>
           </div>
