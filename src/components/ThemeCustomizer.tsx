@@ -10,7 +10,7 @@ interface ThemeCustomizerProps {
 const PRESETS = [
   { label: 'Golden', hue: 34, saturation: 80, lightness: 64 },
   { label: 'Ember', hue: 18, saturation: 72, lightness: 56 },
-  { label: 'Rose', hue: 342, saturation: 58, lightness: 62 },
+  { label: 'Rose', hue: 346, saturation: 37, lightness: 49 },
   { label: 'Plum', hue: 318, saturation: 40, lightness: 58 },
   { label: 'Cobalt', hue: 226, saturation: 62, lightness: 56 },
   { label: 'Sky', hue: 204, saturation: 58, lightness: 56 },

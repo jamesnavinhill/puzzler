@@ -3,9 +3,9 @@ import { ThemeConfig } from './types';
 export const THEME_STORAGE_KEY = 'puzzler.theme.v1';
 
 export const DEFAULT_THEME: ThemeConfig = {
-  hue: 34,
-  saturation: 80,
-  lightness: 64,
+  hue: 346,
+  saturation: 37,
+  lightness: 49,
   isDark: true,
 };
 

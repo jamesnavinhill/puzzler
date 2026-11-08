@@ -283,8 +283,6 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                       draggable={false}
                       className="h-full w-full object-cover"
                     />
-                    <span className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/15" />
-
                     <div
                       className={`pointer-events-none absolute inset-0 z-10 ${REVEAL}`}
                     >
@@ -340,7 +338,7 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                     </div>
 
                     <div
-                      className="absolute inset-x-0 top-[75%] z-30 flex -translate-y-1/2 justify-center"
+                      className="absolute inset-x-0 top-[75%] z-30 flex translate-y-1/2 justify-center"
                       onPointerDown={stopDrag}
                     >
                       <GeneratePuzzleButton
@@ -369,7 +367,6 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                     draggable={false}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.035]"
                   />
-                  <span className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/5" />
                 </button>
               );
             })}

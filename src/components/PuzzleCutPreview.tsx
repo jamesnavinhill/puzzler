@@ -43,6 +43,16 @@ const PuzzleCutPreview: React.FC<PuzzleCutPreviewProps> = ({
     );
     const pieces = generatePuzzlePieces(rows, cols, pieceWidth, pieceHeight);
 
+    // Cut lines: a single hairline tinted with the live accent — no bold
+    // outlines, just a subtle clean guide over the artwork.
+    const accentValue = getComputedStyle(document.documentElement)
+      .getPropertyValue('--accent')
+      .trim();
+    const accentMatch = /hsl\(([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/.exec(accentValue);
+    const cutStroke = accentMatch
+      ? `hsla(${accentMatch[1]}, ${accentMatch[2]}%, ${accentMatch[3]}%, 0.5)`
+      : 'rgba(255, 248, 236, 0.55)';
+
     ctx.lineJoin = 'round';
     pieces.forEach((piece) => {
       ctx.save();
@@ -50,12 +60,8 @@ const PuzzleCutPreview: React.FC<PuzzleCutPreviewProps> = ({
       ctx.beginPath();
       drawPiecePath(ctx, pieceWidth, pieceHeight, piece.shape);
 
-      ctx.lineWidth = 2.4;
-      ctx.strokeStyle = 'rgba(10, 8, 6, 0.5)';
-      ctx.stroke();
-
       ctx.lineWidth = 1;
-      ctx.strokeStyle = 'rgba(255, 248, 236, 0.78)';
+      ctx.strokeStyle = cutStroke;
       ctx.stroke();
       ctx.restore();
     });
