@@ -109,7 +109,7 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onGener
           aria-roledescription="carousel"
           aria-label="Selected artwork"
           tabIndex={0}
-          className="relative h-[var(--hero-card)] max-h-full w-full touch-pan-y select-none overflow-hidden outline-none [--hero-card:clamp(21rem,46vw,46rem)]"
+          className="relative h-[var(--hero-card)] max-h-full w-full touch-pan-y select-none overflow-hidden outline-none [--hero-card:clamp(18rem,39vw,39rem)]"
           style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
@@ -155,7 +155,7 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onGener
                   onClick={() => handleCardClick(offset)}
                   className="group absolute left-1/2 top-1/2 aspect-square w-[var(--hero-card)] overflow-hidden rounded-2xl bg-panel-2 shadow-2xl"
                   style={{
-                    transform: `translate(-50%, -50%) translateX(calc(${offset} * 66%)) scale(${
+                    transform: `translate(-50%, -50%) translateX(calc(${offset} * 38%)) scale(${
                       SCALES[depth] ?? 0.48
                     })`,
                     opacity: OPACITIES[depth] ?? 0.1,
