@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import FileUpload from './FileUpload';
 import BrandMark from './BrandMark';
+import { BRAND_ASSETS } from '../data/brand';
 import { ModelKey, ModelPickerButton } from './ModelPickerButton';
 import { GalleryImage, galleryImages } from '../data/gallery.generated';
 
@@ -29,41 +30,15 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
   selectedModel,
   onSelectedModelChange,
 }) => {
+  const [gallerySource, setGallerySource] = useState<'nh' | 'globe'>('nh');
+
   return (
     <div className="relative z-10">
-      <section className="border-t border-line/70" aria-labelledby="collection-title">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
-          <h2
-            id="collection-title"
-            className="text-2xl font-semibold tracking-[-0.03em] text-ink sm:text-3xl"
-          >
-            The collection
-          </h2>
+      {/* Spacer below hero and above the divider */}
+      <div className="h-32 sm:h-40" aria-hidden="true" />
 
-          <div className="mt-7 grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {galleryImages.map((image) => (
-              <button
-                key={image.id}
-                type="button"
-                onClick={() => onArtworkSelect(image)}
-                aria-label={`Start a puzzle from ${image.title}`}
-                className="group relative aspect-square overflow-hidden rounded-xl bg-panel-2"
-              >
-                <img
-                  src={image.thumb}
-                  alt={image.alt}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
-                />
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-line/70" aria-labelledby="create-title">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
+      <section className="border-t border-line/70" aria-label="How it works">
+        <div className="mx-auto max-w-6xl px-5 pt-32 pb-16 sm:pt-40 sm:pb-20">
           <h2
             id="create-title"
             className="flex flex-wrap items-baseline justify-center gap-x-8 gap-y-3 text-center text-[clamp(1.5rem,3.6vw,2.4rem)] font-bold leading-tight tracking-[-0.035em] text-ink sm:gap-x-12"
@@ -77,8 +52,13 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
               </span>
             ))}
           </h2>
+        </div>
+      </section>
 
-          <div className="mx-auto mt-10 flex flex-col sm:flex-row items-stretch justify-center gap-5 sm:gap-6 max-w-3xl">
+      {/* Cards section (no divider above, space between 1-2-3 preserved, bottom expanded) */}
+      <section aria-label="Image creation options">
+        <div className="mx-auto max-w-6xl px-5 pt-16 pb-24 sm:px-6 sm:pt-20 sm:pb-28">
+          <div className="mx-auto flex flex-col sm:flex-row items-stretch justify-center gap-5 sm:gap-6 max-w-3xl">
             {/* Card 1: Upload an image (reduced container width to meet the 2:3 skeleton padding) */}
             <div className="flex h-[17rem] w-full sm:w-[13.5rem] shrink-0 flex-col justify-between rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
               <h3 className="h-6 text-center text-sm font-semibold tracking-[-0.015em] text-ink whitespace-nowrap">
@@ -149,6 +129,122 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Gallery section with divider line underneath the cards */}
+      <section className="border-t border-line/70" aria-labelledby="gallery-title">
+        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
+          <div className="flex items-center justify-between gap-4">
+            <h2
+              id="gallery-title"
+              className="text-2xl font-semibold tracking-[-0.03em] text-ink sm:text-3xl"
+            >
+              Gallery
+            </h2>
+
+            <div
+              role="group"
+              aria-label="Gallery filter"
+              className="inline-flex items-center rounded-xl border border-line/80 bg-panel/50 p-1 shadow-sm backdrop-blur-sm"
+            >
+              <button
+                type="button"
+                onClick={() => setGallerySource('nh')}
+                aria-label="Navin Hill collection"
+                aria-pressed={gallerySource === 'nh'}
+                title="Navin Hill collection"
+                className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all ${
+                  gallerySource === 'nh'
+                    ? 'border-accent/70 bg-accent/15 text-accent shadow-sm'
+                    : 'border-transparent text-muted/60 hover:border-line/60 hover:bg-canvas/40 hover:text-ink'
+                }`}
+              >
+                <img
+                  src={BRAND_ASSETS.ICON_DARK}
+                  alt=""
+                  aria-hidden="true"
+                  className={`h-4 w-4 object-contain block dark:hidden transition-opacity ${
+                    gallerySource === 'nh' ? 'opacity-100' : 'opacity-40'
+                  }`}
+                />
+                <img
+                  src={BRAND_ASSETS.ICON_WHITE}
+                  alt=""
+                  aria-hidden="true"
+                  className={`h-4 w-4 object-contain hidden dark:block transition-opacity ${
+                    gallerySource === 'nh' ? 'opacity-100' : 'opacity-40'
+                  }`}
+                />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGallerySource('globe')}
+                aria-label="Community generated creations"
+                aria-pressed={gallerySource === 'globe'}
+                title="Community generated creations"
+                className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-all ${
+                  gallerySource === 'globe'
+                    ? 'border-accent/70 bg-accent/15 text-accent shadow-sm'
+                    : 'border-transparent text-muted/60 hover:border-line/60 hover:bg-canvas/40 hover:text-ink'
+                }`}
+              >
+                <svg
+                  className={`h-4 w-4 transition-colors ${
+                    gallerySource === 'globe' ? 'text-accent' : 'text-muted/60'
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" strokeWidth={1.8} />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.8}
+                    d="M3 12h18M12 3a14.5 14.5 0 014 9 14.5 14.5 0 01-4 9 14.5 14.5 0 01-4-9 14.5 14.5 0 014-9z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {gallerySource === 'nh' ? (
+            <div className="mt-7 grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {galleryImages.map((image) => (
+                <button
+                  key={image.id}
+                  type="button"
+                  onClick={() => onArtworkSelect(image)}
+                  aria-label={`Start a puzzle from ${image.title}`}
+                  className="group relative aspect-square overflow-hidden rounded-xl bg-panel-2"
+                >
+                  <img
+                    src={image.thumb}
+                    alt={image.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+                  />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-7 flex flex-col items-center justify-center rounded-2xl border border-dashed border-line/80 bg-panel/30 py-16 px-4 text-center">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-panel-2 text-muted mb-3">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <circle cx="12" cy="12" r="9" strokeWidth={1.7} />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.7} d="M3 12h18M12 3a14.5 14.5 0 014 9 14.5 14.5 0 01-4 9 14.5 14.5 0 01-4-9 14.5 14.5 0 014-9z" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-ink">Global generated feed</p>
+              <p className="mt-1 text-xs text-muted max-w-sm">
+                Community generated puzzles will appear here. Create your own puzzle using the generator above!
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
