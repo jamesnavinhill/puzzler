@@ -80,14 +80,14 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
 
           <div className="mx-auto mt-10 grid max-w-3xl gap-5 sm:gap-6 md:grid-cols-2">
             {/* Card 1: Upload an image */}
-            <div className="flex h-[16.5rem] sm:h-[18rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
-              <h3 className="text-center text-sm sm:text-base font-semibold tracking-[-0.02em] text-ink">
+            <div className="flex h-[17rem] sm:h-[18rem] flex-col justify-between rounded-2xl border border-line/80 bg-panel/50 p-5 sm:p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+              <h3 className="text-center text-sm sm:text-base font-semibold tracking-[-0.015em] text-ink">
                 Upload an image
               </h3>
 
               <div className="my-2 flex flex-1 items-center justify-center">
                 {isProcessing ? (
-                  <div className="flex aspect-[2/3] h-full max-h-[10.5rem] sm:max-h-[11.5rem] w-auto mx-auto flex-col items-center justify-center gap-2 rounded-xl border border-line bg-canvas/40 p-3 text-center">
+                  <div className="flex aspect-[2/3] h-full max-h-[9.75rem] sm:max-h-[10.5rem] w-auto mx-auto flex-col items-center justify-center gap-2.5 rounded-2xl border border-line/80 bg-canvas/40 p-3 text-center">
                     <span className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-accent" />
                     <p className="text-xs font-semibold text-ink">Preparing…</p>
                   </div>
@@ -96,14 +96,16 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                 )}
               </div>
 
-              <p className="text-center text-xs text-muted">
-                PNG, JPEG, WebP · 15MB max
-              </p>
+              <div className="flex h-11 items-center justify-center">
+                <p className="text-center text-xs text-muted/80">
+                  PNG, JPEG, WebP · 15MB max
+                </p>
+              </div>
             </div>
 
             {/* Card 2: Generate an Image */}
-            <div className="flex h-[16.5rem] sm:h-[18rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
-              <h3 className="text-center text-sm sm:text-base font-semibold tracking-[-0.02em] text-ink">
+            <div className="flex h-[17rem] sm:h-[18rem] flex-col justify-between rounded-2xl border border-line/80 bg-panel/50 p-5 sm:p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+              <h3 className="text-center text-sm sm:text-base font-semibold tracking-[-0.015em] text-ink">
                 Generate an Image
               </h3>
 
@@ -123,11 +125,11 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                     }
                   }}
                   placeholder="A greenhouse on a winter night…"
-                  className="flex-1 w-full resize-none rounded-xl border border-line bg-canvas/40 p-3 sm:p-3.5 text-xs sm:text-sm leading-relaxed text-ink placeholder:text-muted/60 focus:border-accent/70 focus:outline-none"
+                  className="flex-1 w-full resize-none rounded-xl border border-line/80 bg-canvas/40 p-3.5 text-xs sm:text-sm leading-relaxed text-ink placeholder:text-muted/50 focus:border-accent/70 focus:bg-canvas/60 focus:outline-none transition-colors"
                 />
               </div>
 
-              <div className="flex items-center gap-2.5">
+              <div className="flex h-11 items-center gap-2.5">
                 <ModelPickerButton
                   selectedModel={selectedModel}
                   onModelChange={onSelectedModelChange}
@@ -136,7 +138,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                   type="button"
                   onClick={onGenerateAi}
                   disabled={!aiPrompt.trim() || isGenerating}
-                  className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-xs sm:text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-xs sm:text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40 shadow-sm"
                 >
                   {isGenerating ? (
                     <>

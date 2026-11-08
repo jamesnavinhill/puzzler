@@ -26,10 +26,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }
 
   return (
     <div
-      className={`group relative flex aspect-[2/3] h-full max-h-[10.5rem] sm:max-h-[11.5rem] w-auto mx-auto flex-col items-center justify-center gap-2.5 overflow-hidden rounded-xl border-2 border-dashed p-3 text-center transition-all duration-300 cursor-pointer ${
+      className={`group relative flex aspect-[2/3] h-full max-h-[9.75rem] sm:max-h-[10.5rem] w-auto mx-auto flex-col items-center justify-center gap-2.5 overflow-hidden rounded-2xl border-2 border-dashed p-3 text-center transition-all duration-300 cursor-pointer ${
         isDragging
           ? 'border-accent bg-accent/10 shadow-[0_0_0_4px_color-mix(in_srgb,var(--accent)_10%,transparent)]'
-          : 'border-line/80 bg-canvas/40 hover:border-accent/60 hover:bg-canvas/65'
+          : 'border-line/80 bg-canvas/30 hover:border-accent/60 hover:bg-canvas/55'
       } ${className}`}
       onDragOver={(event) => {
         event.preventDefault();
@@ -47,7 +47,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }
         title="Choose an image"
       />
 
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-panel-2 text-accent shadow-sm transition-transform duration-300 group-hover:scale-105">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-panel-2 text-accent shadow-sm transition-transform duration-200 group-hover:scale-105">
         <svg
           className="h-5 w-5"
           fill="none"

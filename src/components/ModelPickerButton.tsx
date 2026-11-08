@@ -101,7 +101,7 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
         ref={buttonRef}
         type="button"
         onClick={handleOpenToggle}
-        className="group flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-line bg-canvas/60 px-3 transition-colors hover:border-accent/50 focus:outline-none"
+        className="group flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-line/80 bg-canvas/50 px-3 transition-colors hover:border-accent/50 focus:outline-none"
         title="Change AI model and view daily quota"
         aria-label={`Model: ${activeModel.shortName}, ${gensLeft} of ${totalGens} generations remaining`}
       >
@@ -125,7 +125,7 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
 
           {/* Naturally anchored popover */}
           <div
-            className={`absolute z-50 w-72 rounded-2xl border border-line bg-panel p-3 shadow-2xl backdrop-blur-md transition-all animate-fade-in ${
+            className={`absolute z-50 w-72 rounded-2xl border border-line/80 bg-panel p-3.5 shadow-2xl backdrop-blur-md transition-all animate-fade-in ${
               placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
             } ${align === 'right' ? 'right-0' : 'left-0'}`}
           >
