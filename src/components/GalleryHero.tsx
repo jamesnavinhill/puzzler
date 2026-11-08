@@ -134,13 +134,19 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
   return (
     <section
       aria-label="Puzzle your art"
-      className="relative flex h-[calc(100dvh-4rem)] flex-col items-center overflow-hidden pt-6 sm:pt-8"
+      className="relative flex h-[calc(100dvh-4rem)] flex-col items-center overflow-hidden pt-2 sm:pt-3"
     >
-      <h1 className="shrink-0 whitespace-nowrap px-5 text-center text-[clamp(2rem,4.6vw,3.75rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-ink">
+      <h1
+        className="shrink-0 whitespace-nowrap px-5 text-center text-[clamp(2rem,4.6vw,3.75rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-ink"
+        style={{
+          fontFamily: 'var(--title-font, inherit)',
+          fontWeight: 'var(--title-font-weight, 600)',
+        }}
+      >
         Puzzle your <span className="text-accent">art.</span>
       </h1>
 
-      <div className="relative mt-4 flex min-h-0 w-full flex-1 flex-col items-center justify-center px-5 sm:mt-5 sm:px-0">
+      <div className="relative flex min-h-0 w-full flex-1 flex-col items-center justify-center px-5 sm:px-0">
         <div
           role="region"
           aria-roledescription="carousel"
@@ -268,7 +274,7 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                     </div>
 
                     <div
-                      className="absolute inset-x-0 bottom-0 z-30 flex justify-center px-3 pb-4 sm:pb-5"
+                      className="absolute inset-0 z-30 grid place-items-center"
                       onPointerDown={stopDrag}
                     >
                       <GeneratePuzzleButton

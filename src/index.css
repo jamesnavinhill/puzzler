@@ -152,14 +152,14 @@
   }
 }
 
-/* Size the hero art from the viewport, leaving room for the headline and the
-   action below without relying on fixed content widths. */
+/* Size the hero art from the viewport, leaving room for the headline and a
+   snug even gap above and below — without relying on fixed content widths. */
 .hero-card-size {
   --hero-card: min(
-    calc(16rem + 22vw),
+    calc(16rem + 26vw),
     calc(100vw - 2.5rem),
-    calc(100dvh - 18rem),
-    39rem
+    calc(100dvh - 12rem),
+    40rem
   );
 }
 

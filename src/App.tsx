@@ -25,6 +25,23 @@ interface FocusTarget {
 const difficultyFor = (pieces: number): GameSettings['difficulty'] =>
   pieces === 25 ? 'easy' : pieces === 250 ? 'hard' : 'medium';
 
+// TEMP: title font experiment — cycled by the <> header toggle, removed once a winner is picked.
+const TITLE_FONTS = [
+  { name: 'Playfair Display', stack: "'Playfair Display', serif", weight: 700 },
+  { name: 'Fraunces', stack: "'Fraunces', serif", weight: 700 },
+  { name: 'DM Serif Display', stack: "'DM Serif Display', serif", weight: 400 },
+  { name: 'Instrument Serif', stack: "'Instrument Serif', serif", weight: 400 },
+  { name: 'Young Serif', stack: "'Young Serif', serif", weight: 400 },
+  { name: 'Bricolage Grotesque', stack: "'Bricolage Grotesque', sans-serif", weight: 700 },
+  { name: 'Space Grotesk', stack: "'Space Grotesk', sans-serif", weight: 700 },
+  { name: 'Sora', stack: "'Sora', sans-serif", weight: 700 },
+  { name: 'Outfit', stack: "'Outfit', sans-serif", weight: 700 },
+  { name: 'Syne', stack: "'Syne', sans-serif", weight: 700 },
+  { name: 'Unbounded', stack: "'Unbounded', sans-serif", weight: 600 },
+  { name: 'Archivo Black', stack: "'Archivo Black', sans-serif", weight: 400 },
+];
+const TITLE_FONT_KEY = 'puzzler.title-font.v1';
+
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('home');
   const [image, setImage] = useState<string | null>(null);
@@ -44,6 +61,29 @@ const App: React.FC = () => {
   });
 
   const [theme, setTheme] = useState<ThemeConfig>(() => loadTheme());
+
+  // TEMP: title font experiment state (see TITLE_FONTS).
+  const [titleFontIndex, setTitleFontIndex] = useState<number>(() => {
+    try {
+      const parsed = Number(window.localStorage.getItem(TITLE_FONT_KEY));
+      return Number.isInteger(parsed) && parsed >= 0 && parsed < TITLE_FONTS.length
+        ? parsed
+        : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  useEffect(() => {
+    const font = TITLE_FONTS[titleFontIndex];
+    document.documentElement.style.setProperty('--title-font', font.stack);
+    document.documentElement.style.setProperty('--title-font-weight', String(font.weight));
+    try {
+      window.localStorage.setItem(TITLE_FONT_KEY, String(titleFontIndex));
+    } catch {
+      /* Private browsing may reject localStorage writes. */
+    }
+  }, [titleFontIndex]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -294,6 +334,17 @@ const App: React.FC = () => {
                 </svg>
               </button>
             )}
+
+            {/* TEMP title-font experiment toggle — remove once a winner is picked. */}
+            <button
+              type="button"
+              onClick={() => setTitleFontIndex((index) => (index + 1) % TITLE_FONTS.length)}
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full font-mono text-[11px] text-muted transition-colors hover:bg-panel-2 hover:text-accent sm:h-9 sm:w-9 sm:text-xs"
+              aria-label={`Cycle title font, currently ${TITLE_FONTS[titleFontIndex].name}`}
+              title={TITLE_FONTS[titleFontIndex].name}
+            >
+              {'<>'}
+            </button>
 
             <ThemeCustomizer config={theme} onChange={setTheme} />
 
