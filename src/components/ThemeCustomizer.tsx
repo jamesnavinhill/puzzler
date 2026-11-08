@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { ThemeConfig } from '../types';
-import { accentColor, hslToRgb } from '../theme';
+import { accentColor, hslToHsv, hsvToHsl } from '../theme';
 
 interface ThemeCustomizerProps {
   config: ThemeConfig;
@@ -30,10 +30,9 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ config, onChange }) =
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const squareRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const panelId = useId();
   const accent = accentColor(config.hue, config.saturation, config.lightness);
+  const pointer = hslToHsv(config.hue, config.saturation, config.lightness);
 
   useEffect(() => {
     if (!isOpen) {
@@ -60,43 +59,6 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ config, onChange }) =
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
-
-    const size = 220;
-    canvas.width = size;
-    canvas.height = size;
-    const context = canvas.getContext('2d');
-    if (!context) {
-      return;
-    }
-
-    const pixels = context.createImageData(size, size);
-    for (let y = 0; y < size; y += 1) {
-      const lightness =
-        MAX_LIGHTNESS - (y / (size - 1)) * (MAX_LIGHTNESS - MIN_LIGHTNESS);
-
-      for (let x = 0; x < size; x += 1) {
-        const saturation = (x / (size - 1)) * 100;
-        const [red, green, blue] = hslToRgb(config.hue, saturation, lightness);
-        const offset = (y * size + x) * 4;
-        pixels.data[offset] = red;
-        pixels.data[offset + 1] = green;
-        pixels.data[offset + 2] = blue;
-        pixels.data[offset + 3] = 255;
-      }
-    }
-
-    context.putImageData(pixels, 0, 0);
-  }, [config.hue, isOpen]);
-
   const updateFromPointer = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       const bounds = event.currentTarget.getBoundingClientRect();
@@ -104,20 +66,23 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ config, onChange }) =
         return;
       }
 
-      const saturation = Math.round(
-        clamp(((event.clientX - bounds.left) / bounds.width) * 100, 0, 100)
+      const saturation = clamp(
+        ((event.clientX - bounds.left) / bounds.width) * 100,
+        0,
+        100
       );
-      const lightness = Math.round(
-        clamp(
-          MAX_LIGHTNESS -
-            ((event.clientY - bounds.top) / bounds.height) *
-              (MAX_LIGHTNESS - MIN_LIGHTNESS),
-          MIN_LIGHTNESS,
-          MAX_LIGHTNESS
-        )
+      const value = clamp(
+        (1 - (event.clientY - bounds.top) / bounds.height) * 100,
+        0,
+        100
       );
+      const hsl = hsvToHsl(config.hue, saturation, value);
 
-      onChange({ ...config, saturation, lightness });
+      onChange({
+        ...config,
+        saturation: Math.round(clamp(hsl.s, 0, 100)),
+        lightness: Math.round(clamp(hsl.l, MIN_LIGHTNESS, MAX_LIGHTNESS)),
+      });
     },
     [config, onChange]
   );
@@ -169,7 +134,6 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ config, onChange }) =
           className="absolute right-0 top-[calc(100%+0.5rem)] z-[60] w-[min(15.5rem,calc(100vw-1rem))] rounded-2xl border border-line bg-panel p-3 shadow-2xl animate-rise-in motion-reduce:animate-none"
         >
           <div
-            ref={squareRef}
             role="group"
             tabIndex={0}
             aria-label="Accent colour. Drag to adjust saturation and lightness, or use the arrow keys."
@@ -194,14 +158,29 @@ const ThemeCustomizer: React.FC<ThemeCustomizerProps> = ({ config, onChange }) =
             }}
             onKeyDown={handleSquareKeyDown}
             className="relative aspect-square w-full touch-none cursor-crosshair overflow-hidden rounded-xl border border-line shadow-inner focus-visible:outline-none"
+            style={{ backgroundColor: `hsl(${config.hue}, 100%, 50%)` }}
           >
-            <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full" />
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.55),0_1px_5px_rgba(0,0,0,0.35)]"
+              className="absolute inset-0"
               style={{
-                left: `${config.saturation}%`,
-                top: `${((MAX_LIGHTNESS - config.lightness) / (MAX_LIGHTNESS - MIN_LIGHTNESS)) * 100}%`,
+                background:
+                  'linear-gradient(to right, #fff, rgba(255,255,255,0))',
+              }}
+            />
+            <span
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to top, #000, rgba(0,0,0,0))',
+              }}
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute z-10 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.55),0_1px_5px_rgba(0,0,0,0.35)]"
+              style={{
+                left: `${pointer.s}%`,
+                top: `${100 - pointer.v}%`,
               }}
             />
           </div>

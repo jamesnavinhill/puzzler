@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import GeneratePuzzleButton from './GeneratePuzzleButton';
 import PuzzleCutPreview from './PuzzleCutPreview';
 
 interface PuzzleFocusProps {
@@ -11,7 +12,8 @@ interface PuzzleFocusProps {
 const PIECE_COUNTS = [25, 100, 250];
 
 const PuzzleFocus: React.FC<PuzzleFocusProps> = ({ src, alt, onClose, onStart }) => {
-  const [preview, setPreview] = useState<number | null>(null);
+  const [selectedPieces, setSelectedPieces] = useState(100);
+  const [previewPieces, setPreviewPieces] = useState(100);
   const [displaySize, setDisplaySize] = useState({ width: 0, height: 0 });
   const imgRef = useRef<HTMLImageElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -88,37 +90,52 @@ const PuzzleFocus: React.FC<PuzzleFocusProps> = ({ src, alt, onClose, onStart })
             }}
           />
 
-          {preview !== null && (
-            <PuzzleCutPreview
-              pieceCount={preview}
-              width={displaySize.width}
-              height={displaySize.height}
-            />
-          )}
+          <PuzzleCutPreview
+            pieceCount={previewPieces}
+            width={displaySize.width}
+            height={displaySize.height}
+          />
 
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-gradient-to-t from-black/65 via-black/25 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-24 bg-gradient-to-b from-black/60 via-black/15 to-transparent" />
 
-          <div
-            className="absolute inset-x-0 bottom-0 z-30 flex justify-center px-3 pb-3 sm:pb-4"
-            onPointerLeave={() => setPreview(null)}
-          >
-            <div className="flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-full border border-white/15 bg-black/35 p-1 backdrop-blur-md">
-              {PIECE_COUNTS.map((count) => (
-                <button
-                  key={count}
-                  type="button"
-                  aria-label={`Start a ${count}-piece puzzle`}
-                  onPointerEnter={() => setPreview(count)}
-                  onFocus={() => setPreview(count)}
-                  onBlur={() => setPreview(null)}
-                  onClick={() => onStart(count)}
-                  className="rounded-full px-3.5 py-2 text-sm font-semibold text-white/85 transition-colors hover:bg-white/15 hover:text-white focus-visible:bg-white/15 focus-visible:text-white sm:px-4"
-                >
-                  <span className="tabular-nums">{count}</span>
-                  <span className="ml-1.5 text-[11px] font-normal text-white/55">pieces</span>
-                </button>
-              ))}
+          <div className="absolute inset-x-0 top-0 z-30 flex justify-center px-3 pt-3 sm:pt-4">
+            <div
+              role="group"
+              aria-label="Puzzle size"
+              className="flex items-center gap-0.5 rounded-full border border-white/15 bg-black/35 p-1 backdrop-blur-md"
+            >
+              {PIECE_COUNTS.map((count) => {
+                const isSelected = selectedPieces === count;
+
+                return (
+                  <button
+                    key={count}
+                    type="button"
+                    aria-label={`Use ${count} pieces`}
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      setSelectedPieces(count);
+                      setPreviewPieces(count);
+                    }}
+                    onPointerEnter={() => setPreviewPieces(count)}
+                    onPointerLeave={() => setPreviewPieces(selectedPieces)}
+                    onFocus={() => setPreviewPieces(count)}
+                    onBlur={() => setPreviewPieces(selectedPieces)}
+                    className={`rounded-full px-3 py-1.5 text-[11px] font-semibold tabular-nums transition-colors sm:px-3.5 sm:py-2 sm:text-xs ${
+                      isSelected
+                        ? 'bg-accent text-on-accent'
+                        : 'text-white/80 hover:bg-white/15 hover:text-white'
+                    }`}
+                  >
+                    {count}
+                  </button>
+                );
+              })}
             </div>
+          </div>
+
+          <div className="absolute inset-x-0 bottom-0 z-30 flex justify-center px-3 pb-4 sm:pb-5">
+            <GeneratePuzzleButton onClick={() => onStart(selectedPieces)} />
           </div>
         </div>
       </div>

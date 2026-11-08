@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GalleryImage, galleryImages } from '../data/gallery.generated';
+import GeneratePuzzleButton from './GeneratePuzzleButton';
 import PuzzleCutPreview from './PuzzleCutPreview';
 
 interface GalleryHeroProps {
@@ -139,7 +140,13 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
         Puzzle your <span className="text-accent">art.</span>
       </h1>
 
-      <div className="relative mt-4 flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-4 px-5 sm:mt-5 sm:gap-5 sm:px-0">
+      <div className="z-30 mt-3.5 flex shrink-0 justify-center sm:mt-4">
+        <GeneratePuzzleButton
+          onClick={() => onStart(activeImage, selectedPieces)}
+        />
+      </div>
+
+      <div className="relative mt-2 flex min-h-0 w-full flex-1 flex-col items-center justify-center translate-y-1.5 px-5 sm:mt-4 sm:translate-y-2.5 sm:px-0">
         <div
           role="region"
           aria-roledescription="carousel"
@@ -253,7 +260,7 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                               onPointerLeave={() => setPreviewPieces(selectedPieces)}
                               onFocus={() => setPreviewPieces(count)}
                               onBlur={() => setPreviewPieces(selectedPieces)}
-                              className={`rounded-full px-3 py-1.5 text-[11px] font-semibold tabular-nums transition-colors sm:px-3.5 sm:py-2 sm:text-xs ${
+                              className={`flex h-7 w-9 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums transition-colors sm:h-8 sm:w-11 sm:text-xs ${
                                 isSelected
                                   ? 'bg-accent text-on-accent'
                                   : 'text-white/80 hover:bg-white/15 hover:text-white'
@@ -265,7 +272,6 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                         })}
                       </div>
                     </div>
-
                   </div>
                 );
               }
@@ -301,28 +307,6 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
             Selected artwork: {activeImage?.title}
           </p>
         </div>
-
-        <button
-          type="button"
-          onClick={() => onStart(activeImage, selectedPieces)}
-          className="group/cta z-30 inline-flex max-w-full shrink-0 items-center gap-2.5 rounded-full bg-accent px-7 py-3.5 text-sm font-bold text-on-accent shadow-[0_16px_38px_-16px_color-mix(in_srgb,var(--accent)_85%,transparent)] transition-all hover:brightness-105 active:scale-[0.985] sm:px-8 sm:py-4 sm:text-base"
-        >
-          Generate a puzzle
-          <svg
-            className="h-4 w-4 transition-transform group-hover/cta:translate-x-0.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2.2}
-              d="M5 12h14M13 6l6 6-6 6"
-            />
-          </svg>
-        </button>
       </div>
     </section>
   );

@@ -16,10 +16,18 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^22.14.0",
-    "@vercel/node": "^23.0.1",
+    "@vercel/node": "^30.0.0",
     "@vitejs/plugin-react": "^5.2.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~5.8.2",
     "vite": "^8.2.1"
+  },
+  "overrides": {
+    "@fastify/busboy": "^3.2.2",
+    "ajv": "^8.17.2",
+    "glob": "^14.0.2",
+    "minimatch": "^11.0.1",
+    "path-to-regexp": "^6.3.0",
+    "undici": "^6.29.1"
   }
 }

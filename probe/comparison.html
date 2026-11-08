@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Puzzler style-off — text-only, same prompts, 1024²</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 1.5rem; background: #faf9f7; color: #222; }
+  h1 { font-size: 1.2rem; } p.meta { color: #666; font-size: .85rem; max-width: 70ch; }
+  table { border-collapse: collapse; margin-top: 1rem; width: 100%; }
+  th, td { padding: .4rem; vertical-align: top; }
+  th { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: #777; text-align: left; }
+  td img { width: 100%; max-width: 320px; display: block; border-radius: 4px; }
+  td .cell { position: relative; }
+  td .miss { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; max-width: 320px; background: #eee; color: #999; border-radius: 4px; font-size: .8rem; }
+  .model { font-weight: 600; white-space: nowrap; }
+  .cost { display: block; font-weight: 400; color: #888; font-size: .8rem; margin-top: .2rem; }
+  .prompts { margin-top: 1.5rem; font-size: .8rem; color: #555; max-width: 90ch; }
+</style>
+</head>
+<body>
+<h1>Style-off — one prompt, six models, two random seeds each (text-only, 1024²)</h1>
+<p class="meta">Generated 2026-11-08 on Cloudflare Workers AI. Cost per generation confirmed via GraphQL analytics. Failed cells billed 0 neurons.</p>
+<table>
+<tr><th>Model</th><th>P1 · run a</th><th>P1 · run b</th><th>P2 · run a</th><th>P2 · run b</th></tr>
+<tr><td class="model">flux-1-schnell<span class="cost">172.8 n / $0.0019 · 2 s</span></td>
+  <td><img src="outputs/style-off/schnell/p1-a.png"></td><td><img src="outputs/style-off/schnell/p1-b.png"></td><td><img src="outputs/style-off/schnell/p2-a.png"></td><td><img src="outputs/style-off/schnell/p2-b.png"></td></tr>
+<tr><td class="model">flux-2-klein-4b<span class="cost">104.2 n / $0.0011 · 7–13 s</span></td>
+  <td><img src="outputs/style-off/klein-4b/p1-a.png"></td><td><img src="outputs/style-off/klein-4b/p1-b.png"></td><td><img src="outputs/style-off/klein-4b/p2-a.png"></td><td><img src="outputs/style-off/klein-4b/p2-b.png"></td></tr>
+<tr><td class="model">flux-2-klein-9b<span class="cost">1,363.6 n / $0.0150 · 2–2.5 s</span></td>
+  <td><img src="outputs/style-off/klein-9b/p1-a.png"></td><td><img src="outputs/style-off/klein-9b/p1-b.png"></td><td><div class="miss">500 · 0 n</div></td><td><img src="outputs/style-off/klein-9b/p2-b.png"></td></tr>
+<tr><td class="model">lucid-origin<span class="cost">3,504 n / $0.0385 · 5 s</span></td>
+  <td><img src="outputs/style-off/lucid-origin/p1-a.png"></td><td><img src="outputs/style-off/lucid-origin/p1-b.png"></td><td><img src="outputs/style-off/lucid-origin/p2-a.png"></td><td><img src="outputs/style-off/lucid-origin/p2-b.png"></td></tr>
+<tr><td class="model">phoenix-1.0<span class="cost">3,120 n / $0.0343 · 4–16 s</span></td>
+  <td><img src="outputs/style-off/phoenix-1.0/p1-a.jpg"></td><td><img src="outputs/style-off/phoenix-1.0/p1-b.jpg"></td><td><img src="outputs/style-off/phoenix-1.0/p2-a.jpg"></td><td><img src="outputs/style-off/phoenix-1.0/p2-b.jpg"></td></tr>
+<tr><td class="model">flux-2-dev<span class="cost">3,000 n / $0.0330 · 7–10 s</span></td>
+  <td><img src="outputs/style-off/flux-2-dev/p1-a.png"></td><td><img src="outputs/style-off/flux-2-dev/p1-b.png"></td><td><img src="outputs/style-off/flux-2-dev/p2-a.png"></td><td><img src="outputs/style-off/flux-2-dev/p2-b.png"></td></tr>
+</table>
+<div class="prompts">
+  <strong>P1 (botanical):</strong> "vintage analog botanical photograph collage: pink trumpet lilies blooming against a deep starry night sky with the milky way galaxy, retro film grain, faded analog print texture, dreamy celestial collage, muted warm palette, no text no lettering"<br><br>
+  <strong>P2 (sci-fi):</strong> "retro 1970s science fiction collage: giant salmon-pink planet with small moons and a chrome flying saucer rising over hazy blue mountains and desert palms, faded pastel palette, analog film grain, light leaks, worn aged print texture, no text"
+</div>
+</body>
+</html>

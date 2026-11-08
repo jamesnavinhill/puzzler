@@ -42,6 +42,33 @@ export const hslToRgb = (hue: number, saturation: number, lightness: number) => 
   ] as const;
 };
 
+/** HSL ↔ HSV, so the picker square can use standard gradient math. */
+export const hslToHsv = (
+  hue: number,
+  saturation: number,
+  lightness: number
+): { s: number; v: number } => {
+  const s = clamp(saturation, 0, 100) / 100;
+  const l = clamp(lightness, 0, 100) / 100;
+  const v = l + s * Math.min(l, 1 - l);
+  const sv = v === 0 ? 0 : 2 * (1 - l / v);
+
+  return { s: sv * 100, v: v * 100 };
+};
+
+export const hsvToHsl = (
+  hue: number,
+  saturation: number,
+  value: number
+): { s: number; l: number } => {
+  const s = clamp(saturation, 0, 100) / 100;
+  const v = clamp(value, 0, 100) / 100;
+  const l = v * (1 - s / 2);
+  const sl = l === 0 || l === 1 ? 0 : (v - l) / Math.min(l, 1 - l);
+
+  return { s: sl * 100, l: l * 100 };
+};
+
 const relativeLuminance = (hue: number, saturation: number, lightness: number) => {
   const [r, g, b] = hslToRgb(hue, saturation, lightness);
   const channel = (value: number) => {
