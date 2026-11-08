@@ -99,6 +99,41 @@
   animation: soft-pulse 5s ease-in-out infinite;
 }
 
+.volume-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.volume-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -3px;
+  border: 2px solid var(--app-panel);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+  cursor: pointer;
+}
+
+.volume-range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.volume-range::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--app-panel);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+  cursor: pointer;
+}
+
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--accent) 45%, transparent) transparent;

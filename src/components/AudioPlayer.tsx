@@ -44,8 +44,6 @@ const AudioPlayer: React.FC = () => {
     []
   );
 
-  const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
-
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
@@ -198,50 +196,36 @@ const AudioPlayer: React.FC = () => {
         }}
       />
 
-      <div className="relative flex max-w-full items-center gap-0.5 rounded-full border border-line bg-panel/85 p-1 pl-1.5 shadow-sm backdrop-blur-xl">
+      <div className="relative flex min-w-0 max-w-full items-center rounded-full border border-line bg-panel/85 py-1 pl-3 pr-1.5 shadow-sm backdrop-blur-xl">
         <button
           type="button"
           onClick={() => setShowQueue((open) => !open)}
-          className="group flex min-w-0 items-center gap-2 rounded-full pr-1 text-left"
+          className="group flex min-w-0 items-center rounded-full py-0.5 pr-1 text-left"
           aria-label="Open Navin Hill playlist"
           aria-expanded={showQueue}
+          aria-haspopup="dialog"
           title="Open playlist"
         >
-          <span
-            className={`grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent/15 text-accent ring-1 transition-colors ${
-              hasError ? 'ring-red-400/50' : 'ring-accent/25'
-            }`}
-          >
-            {isPlaying ? (
-              <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="4" y="9" width="3" height="6" rx="1" />
-                <rect x="10.5" y="5" width="3" height="14" rx="1" />
-                <rect x="17" y="8" width="3" height="8" rx="1" />
-              </svg>
-            ) : (
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 3a9 9 0 100 18 9 9 0 000-18zm0 2a7 7 0 016.93 6H15.9a5.02 5.02 0 00-2.4-3.62V5zm-2 0v2.38A5.02 5.02 0 007.6 11H5.07A7 7 0 0110 5zm-4.93 8H7.6a5.02 5.02 0 002.4 3.62V19A7 7 0 015.07 13zm6.93 6v-2.38A5.02 5.02 0 0015.9 13h3.03A7 7 0 0112 19z" />
-              </svg>
-            )}
-          </span>
-          <span className="hidden min-w-0 sm:block">
-            <span className="block max-w-[9.5rem] truncate text-[11px] font-semibold leading-tight text-ink">
+          <span className="min-w-0">
+            <span className="block max-w-[9rem] truncate text-[11px] font-semibold leading-tight text-ink transition-colors group-hover:text-accent sm:max-w-[10rem]">
               {hasError ? 'Stream unavailable' : currentTrack.title}
             </span>
-            <span className="mt-0.5 block max-w-[9.5rem] truncate text-[10px] leading-tight text-muted">
+            <span className="mt-0.5 block max-w-[9rem] truncate text-[10px] leading-tight text-muted transition-colors group-hover:text-ink sm:max-w-[10rem]">
               {currentTrack.album} · {currentTrack.trackNumber}/
               {currentAlbum?.tracks.length ?? 0}
             </span>
           </span>
         </button>
 
-        <div className="flex items-center gap-0.5">
+        <span className="mx-1 h-5 w-px shrink-0 bg-line/70" aria-hidden="true" />
+
+        <div className="flex shrink-0 items-center gap-0.5">
           <button
             type="button"
             onClick={playPrevious}
             aria-label="Previous track"
             title="Previous"
-            className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink"
+            className="hidden h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink sm:grid"
           >
             <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
@@ -273,7 +257,7 @@ const AudioPlayer: React.FC = () => {
             onClick={playNext}
             aria-label="Next track"
             title="Next"
-            className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink"
+            className="hidden h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink sm:grid"
           >
             <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
@@ -281,10 +265,18 @@ const AudioPlayer: React.FC = () => {
           </button>
         </div>
 
-        <div className="hidden items-center gap-1.5 pl-1 pr-2 lg:flex">
-          <svg className="h-3.5 w-3.5 text-muted" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M14 3.23v17.54a1 1 0 01-1.64.77L6.73 17H3a1 1 0 01-1-1v-8a1 1 0 011-1h3.73l5.63-4.54A1 1 0 0114 3.23zM17.54 8.46a1 1 0 10-1.41 1.41 3 3 0 010 4.24 1 1 0 001.41 1.41 5 5 0 000-7.06z" />
-          </svg>
+        <div className="ml-1 hidden shrink-0 items-center gap-1 border-l border-line/70 pl-2 pr-0.5 md:flex">
+          <button
+            type="button"
+            onClick={() => setVolume((value) => (value > 0 ? 0 : 0.5))}
+            aria-label={volume === 0 ? 'Unmute music' : 'Mute music'}
+            title={volume === 0 ? 'Unmute' : 'Mute'}
+            className="grid h-7 w-7 place-items-center rounded-full text-muted transition-colors hover:text-ink"
+          >
+            <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M14 3.23v17.54a1 1 0 01-1.64.77L6.73 17H3a1 1 0 01-1-1v-8a1 1 0 011-1h3.73l5.63-4.54A1 1 0 0114 3.23zM17.54 8.46a1 1 0 10-1.41 1.41 3 3 0 010 4.24 1 1 0 001.41 1.41 5 5 0 000-7.06z" />
+            </svg>
+          </button>
           <input
             type="range"
             min="0"
@@ -293,27 +285,12 @@ const AudioPlayer: React.FC = () => {
             value={volume}
             onChange={(event) => setVolume(Number(event.target.value))}
             aria-label="Music volume"
-            className="h-1 w-20 cursor-pointer appearance-none rounded-full bg-line accent-[var(--accent)]"
-          />
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowQueue((open) => !open)}
-          aria-label="Open playlist"
-          aria-expanded={showQueue}
-          title="Playlist"
-          className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 6h16M4 12h10M4 18h7M17 14v6m0 0l3-3m-3 3l-3-3" />
-          </svg>
-        </button>
-
-        <div className="pointer-events-none absolute inset-x-5 bottom-0.5 h-px overflow-hidden rounded-full bg-line/80">
-          <div
-            className="h-full bg-accent transition-[width] duration-300"
-            style={{ width: `${progress}%` }}
+            className="volume-range h-1 w-16 cursor-pointer appearance-none rounded-full"
+            style={{
+              background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+                volume * 100
+              }%, var(--app-line) ${volume * 100}%, var(--app-line) 100%)`,
+            }}
           />
         </div>
       </div>
