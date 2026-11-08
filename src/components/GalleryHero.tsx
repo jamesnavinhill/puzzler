@@ -136,7 +136,7 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
       aria-label="Puzzle your art"
       className="relative flex h-[calc(100dvh-4rem)] flex-col items-center overflow-hidden"
     >
-      <div className="flex w-full flex-1 items-center justify-center px-5">
+      <div className="flex w-full shrink-0 items-center justify-center px-5 pt-[var(--hero-gap)]">
         <h1
           className="whitespace-nowrap text-center text-[clamp(2.25rem,5.2vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-ink"
           style={{
@@ -148,13 +148,13 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
         </h1>
       </div>
 
-      <div className="relative flex w-full shrink-0 items-center justify-center px-5 pb-12 sm:px-0">
+      <div className="relative mb-[var(--hero-gap)] mt-[var(--hero-gap)] flex w-full shrink-0 items-center justify-center px-5 sm:px-0">
         <div
           role="region"
           aria-roledescription="carousel"
           aria-label="Selected artwork"
           tabIndex={0}
-          className="hero-card-size relative h-[var(--hero-card)] max-h-full w-full touch-pan-y select-none overflow-hidden outline-none"
+          className="relative h-[var(--hero-card)] max-h-full w-full touch-pan-y select-none overflow-hidden outline-none"
           style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}

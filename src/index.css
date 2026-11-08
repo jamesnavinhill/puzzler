@@ -152,14 +152,25 @@
   }
 }
 
-/* Size the hero art from the viewport, leaving room for the headline above and
-   a fixed breathing gap below — without relying on fixed content widths. */
-.hero-card-size {
-  --hero-card: min(
-    calc(16rem + 26vw),
-    calc(100vw - 2.5rem),
-    calc(100dvh - 12rem),
-    40rem
+/* Hero geometry, defined once so title band and card can't drift apart:
+   --hero-card-scale shrinks the art uniformly (1 = full size) and
+   --hero-gap splits the leftover height into three equal gaps (above the
+   title, title-to-card, below the card) for an even vertical rhythm. */
+:root {
+  --hero-card-scale: 0.8;
+  --hero-card: calc(
+    min(
+      calc(16rem + 26vw),
+      calc(100vw - 2.5rem),
+      calc(100dvh - 12rem),
+      40rem
+    ) * var(--hero-card-scale)
+  );
+  --hero-gap: calc(
+    (
+      100dvh - 4rem - var(--hero-card) -
+        clamp(2.295rem, 5.304vw, 4.59rem)
+    ) / 3
   );
 }
 
