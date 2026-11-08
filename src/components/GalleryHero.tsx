@@ -340,7 +340,7 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                     </div>
 
                     <div
-                      className="absolute inset-0 z-30 grid place-items-center"
+                      className="absolute inset-x-0 top-[75%] z-30 flex -translate-y-1/2 justify-center"
                       onPointerDown={stopDrag}
                     >
                       <GeneratePuzzleButton
