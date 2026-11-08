@@ -99,6 +99,12 @@
   animation: soft-pulse 5s ease-in-out infinite;
 }
 
+/* Lift the carousel toward the viewport center without letting it crowd the
+   headline on shorter screens. */
+.hero-carousel-lift {
+  transform: translateY(clamp(-5rem, calc((11rem + var(--hero-card) - 100dvh) / 2), 0rem));
+}
+
 .volume-range::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 999px;

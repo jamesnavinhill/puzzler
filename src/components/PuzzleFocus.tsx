@@ -1,9 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  calculateGridDimensions,
-  drawPiecePath,
-  generatePuzzlePieces,
-} from '../utils/puzzleGenerator';
+import PuzzleCutPreview from './PuzzleCutPreview';
 
 interface PuzzleFocusProps {
   src: string;
@@ -13,65 +9,6 @@ interface PuzzleFocusProps {
 }
 
 const PIECE_COUNTS = [25, 100, 250];
-
-const CutPreview: React.FC<{
-  pieceCount: number;
-  width: number;
-  height: number;
-}> = ({ pieceCount, width, height }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || width <= 0 || height <= 0) {
-      return;
-    }
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-
-    const { rows, cols, pieceWidth, pieceHeight } = calculateGridDimensions(
-      width,
-      height,
-      pieceCount
-    );
-    const pieces = generatePuzzlePieces(rows, cols, pieceWidth, pieceHeight);
-
-    ctx.lineJoin = 'round';
-    pieces.forEach((piece) => {
-      ctx.save();
-      ctx.translate(piece.correctX, piece.correctY);
-      ctx.beginPath();
-      drawPiecePath(ctx, pieceWidth, pieceHeight, piece.shape);
-
-      ctx.lineWidth = 2.4;
-      ctx.strokeStyle = 'rgba(10, 8, 6, 0.5)';
-      ctx.stroke();
-
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = 'rgba(255, 248, 236, 0.78)';
-      ctx.stroke();
-      ctx.restore();
-    });
-  }, [height, pieceCount, width]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-10 h-full w-full"
-    />
-  );
-};
 
 const PuzzleFocus: React.FC<PuzzleFocusProps> = ({ src, alt, onClose, onStart }) => {
   const [preview, setPreview] = useState<number | null>(null);
@@ -152,7 +89,7 @@ const PuzzleFocus: React.FC<PuzzleFocusProps> = ({ src, alt, onClose, onStart })
           />
 
           {preview !== null && (
-            <CutPreview
+            <PuzzleCutPreview
               pieceCount={preview}
               width={displaySize.width}
               height={displaySize.height}

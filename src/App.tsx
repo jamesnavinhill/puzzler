@@ -194,12 +194,8 @@ const App: React.FC = () => {
     setGameState('playing');
   };
 
-  const handleStartPieces = (pieces: number) => {
-    if (!focus) {
-      return;
-    }
-
-    setImage(focus.src);
+  const beginPuzzle = (src: string, pieces: number) => {
+    setImage(src);
     setCompletionPercent(0);
     setGameSettings((settings) => ({
       ...settings,
@@ -209,6 +205,23 @@ const App: React.FC = () => {
     setGameId((id) => id + 1);
     setFocus(null);
     setGameState('playing');
+  };
+
+  const handleStartPieces = (pieces: number) => {
+    if (!focus) {
+      return;
+    }
+
+    beginPuzzle(focus.src, pieces);
+  };
+
+  const handleHeroStart = (artwork: GalleryImage, pieces: number) => {
+    setError(null);
+    const index = galleryImages.findIndex((item) => item.id === artwork.id);
+    if (index >= 0) {
+      setCarouselIndex(index);
+    }
+    beginPuzzle(artwork.full, pieces);
   };
 
   const resetGame = () => {
@@ -324,7 +337,7 @@ const App: React.FC = () => {
             <GalleryHero
               index={carouselIndex}
               onIndexChange={setCarouselIndex}
-              onGenerate={handleArtworkSelect}
+              onStart={handleHeroStart}
             />
             <HomeSections
               onArtworkSelect={handleArtworkSelect}
