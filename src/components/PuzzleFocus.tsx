@@ -102,7 +102,7 @@ const PuzzleFocus: React.FC<PuzzleFocusProps> = ({ src, alt, onClose, onStart })
             <div
               role="group"
               aria-label="Puzzle size"
-              className="flex items-center gap-0.5 rounded-full border border-white/15 bg-black/35 p-1 backdrop-blur-md"
+              className="flex w-[var(--control-pill-w)] items-center gap-0.5 rounded-full border border-white/15 bg-black/35 p-1 backdrop-blur-md"
             >
               {PIECE_COUNTS.map((count) => {
                 const isSelected = selectedPieces === count;
@@ -121,7 +121,7 @@ const PuzzleFocus: React.FC<PuzzleFocusProps> = ({ src, alt, onClose, onStart })
                     onPointerLeave={() => setPreviewPieces(selectedPieces)}
                     onFocus={() => setPreviewPieces(count)}
                     onBlur={() => setPreviewPieces(selectedPieces)}
-                    className={`rounded-full px-3 py-1.5 text-[11px] font-semibold tabular-nums transition-colors sm:px-3.5 sm:py-2 sm:text-xs ${
+                    className={`flex h-7 min-w-0 flex-1 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums transition-colors sm:h-8 sm:text-xs ${
                       isSelected
                         ? 'bg-accent text-on-accent'
                         : 'text-white/80 hover:bg-white/15 hover:text-white'

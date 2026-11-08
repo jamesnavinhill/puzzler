@@ -163,6 +163,13 @@
   );
 }
 
+/* Shared width for the on-image control pair (size picker + generate CTA) so
+   the top and bottom controls read as one uniform column on the artwork. The
+   78% floor keeps both inside cards too small for the full 11rem. */
+:root {
+  --control-pill-w: min(11rem, 78%);
+}
+
 .volume-range::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 999px;

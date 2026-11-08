@@ -17,6 +17,7 @@ const PIECE_COUNTS = [25, 100, 250];
 
 const REVEAL =
   'opacity-0 transition-opacity duration-200 max-md:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100';
+const REVEAL_INTERACTIVE = `${REVEAL} pointer-events-none max-md:pointer-events-auto group-hover:pointer-events-auto group-focus-within:pointer-events-auto [@media(hover:none)]:pointer-events-auto`;
 
 const normalize = (value: number) =>
   ((value % galleryImages.length) + galleryImages.length) % galleryImages.length;
@@ -139,42 +140,6 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
         Puzzle your <span className="text-accent">art.</span>
       </h1>
 
-      <div className="z-30 mt-4 flex shrink-0 justify-center sm:mt-5">
-        <div
-          role="group"
-          aria-label="Puzzle size"
-          className="flex items-center gap-0.5 rounded-full border border-line bg-panel/80 p-1 shadow-sm backdrop-blur-md"
-        >
-          {PIECE_COUNTS.map((count) => {
-            const isSelected = selectedPieces === count;
-
-            return (
-              <button
-                key={count}
-                type="button"
-                aria-label={`Use ${count} pieces`}
-                aria-pressed={isSelected}
-                onClick={() => {
-                  setSelectedPieces(count);
-                  setPreviewPieces(count);
-                }}
-                onPointerEnter={() => setPreviewPieces(count)}
-                onPointerLeave={() => setPreviewPieces(selectedPieces)}
-                onFocus={() => setPreviewPieces(count)}
-                onBlur={() => setPreviewPieces(selectedPieces)}
-                className={`rounded-full px-3 py-1.5 text-[11px] font-semibold tabular-nums transition-colors sm:px-3.5 sm:py-2 sm:text-xs ${
-                  isSelected
-                    ? 'bg-accent text-on-accent'
-                    : 'text-muted hover:bg-panel-2 hover:text-ink'
-                }`}
-              >
-                {count}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       <div className="relative mt-4 flex min-h-0 w-full flex-1 flex-col items-center justify-center px-5 sm:mt-5 sm:px-0">
         <div
           role="region"
@@ -256,6 +221,50 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                         width={activeSize.width}
                         height={activeSize.height}
                       />
+                    </div>
+
+                    <div
+                      className={`pointer-events-none absolute inset-x-0 top-0 z-20 h-24 bg-gradient-to-b from-black/60 via-black/15 to-transparent ${REVEAL}`}
+                    />
+
+                    <div
+                      className={`absolute inset-x-0 top-0 z-30 flex justify-center px-3 pt-3 sm:pt-4 ${REVEAL_INTERACTIVE}`}
+                      onPointerDown={stopDrag}
+                    >
+                      <div
+                        role="group"
+                        aria-label="Puzzle size"
+                        className="flex w-[var(--control-pill-w)] items-center gap-0.5 rounded-full border border-white/15 bg-black/35 p-1 backdrop-blur-md"
+                      >
+                        {PIECE_COUNTS.map((count) => {
+                          const isSelected = selectedPieces === count;
+
+                          return (
+                            <button
+                              key={count}
+                              type="button"
+                              aria-label={`Use ${count} pieces`}
+                              aria-pressed={isSelected}
+                              onPointerDown={stopDrag}
+                              onClick={() => {
+                                setSelectedPieces(count);
+                                setPreviewPieces(count);
+                              }}
+                              onPointerEnter={() => setPreviewPieces(count)}
+                              onPointerLeave={() => setPreviewPieces(selectedPieces)}
+                              onFocus={() => setPreviewPieces(count)}
+                              onBlur={() => setPreviewPieces(selectedPieces)}
+                              className={`flex h-7 min-w-0 flex-1 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums transition-colors sm:h-8 sm:text-xs ${
+                                isSelected
+                                  ? 'bg-accent text-on-accent'
+                                  : 'text-white/80 hover:bg-white/15 hover:text-white'
+                              }`}
+                            >
+                              {count}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     <div

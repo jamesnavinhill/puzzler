@@ -2,13 +2,19 @@ import React from 'react';
 
 interface GeneratePuzzleButtonProps {
   onClick: () => void;
+  className?: string;
 }
 
-const GeneratePuzzleButton: React.FC<GeneratePuzzleButtonProps> = ({ onClick }) => (
+const GeneratePuzzleButton: React.FC<GeneratePuzzleButtonProps> = ({
+  onClick,
+  className,
+}) => (
   <button
     type="button"
     onClick={onClick}
-    className="generate-puzzle-btn inline-flex shrink-0 items-center gap-2 rounded-full bg-accent px-7 py-3 text-sm font-bold text-on-accent shadow-[0_16px_38px_-16px_color-mix(in_srgb,var(--accent)_85%,transparent)] transition-all hover:brightness-105 active:scale-[0.985] cursor-pointer sm:px-8 sm:py-3.5 sm:text-base"
+    className={`generate-puzzle-btn inline-flex w-[var(--control-pill-w)] shrink-0 items-center justify-center gap-2 rounded-full bg-accent px-2 py-3 text-sm font-bold text-on-accent shadow-[0_16px_38px_-16px_color-mix(in_srgb,var(--accent)_85%,transparent)] transition-all hover:brightness-105 active:scale-[0.985] cursor-pointer sm:py-3.5 sm:text-base ${
+      className ?? ''
+    }`}
   >
     Generate
     <svg
