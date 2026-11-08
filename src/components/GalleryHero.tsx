@@ -136,20 +136,20 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
       aria-label="Puzzle your art"
       className="relative flex h-[calc(100dvh-4rem)] flex-col items-center overflow-hidden"
     >
-      <div className="flex h-[var(--hero-band)] w-full shrink-0 items-center justify-center px-5">
+      <div className="flex w-full shrink-0 items-center justify-center px-5 py-4 sm:py-5">
         <h1
-          className="whitespace-nowrap text-center font-semibold leading-[1.02] tracking-[-0.045em] text-ink"
+          className="whitespace-nowrap text-center leading-[1.02] tracking-[-0.045em] text-ink"
           style={{
-            fontFamily: 'var(--title-font, inherit)',
-            fontWeight: 'var(--title-font-weight, 600)',
+            fontFamily: "'Young Serif', serif",
+            fontWeight: 400,
             fontSize: 'var(--title-size)',
           }}
         >
-          Puzzle your <span className="text-accent">art.</span>
+          Puzzle your <span className="text-accent">Art.</span>
         </h1>
       </div>
 
-      <div className="relative mb-[var(--hero-gap)] flex w-full shrink-0 items-center justify-center px-5 sm:px-0">
+      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center px-5 sm:px-0">
         <div
           role="region"
           aria-roledescription="carousel"

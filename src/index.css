@@ -152,28 +152,27 @@
   }
 }
 
-/* Hero geometry, defined once so title band and card can't drift apart:
-   --hero-card-scale shrinks the art uniformly (1 = full size) and --hero-gap
-   splits the leftover height into three equal gaps. The layout reserves the
-   approved title metrics (--title-size-ref) as a fixed band (--hero-band), so
-   the rendered title (--title-size) can grow or shrink inside that band
-   without moving the carousel by a single pixel. */
+/* Hero geometry, defined once: the art scales uniformly via
+   --hero-card-scale (full size on small screens, where the vw cap already
+   keeps it compact), and the title sits in a snug fixed band above the
+   carousel with the card centered in the space that remains. */
 :root {
   --hero-card-scale: 0.8;
   --hero-card: calc(
     min(
-      calc(16rem + 26vw),
+      calc(16rem + 30vw),
       calc(100vw - 2.5rem),
       calc(100dvh - 12rem),
       40rem
     ) * var(--hero-card-scale)
   );
-  --title-size: clamp(2.5rem, 5.8vw, 5.25rem);
-  --title-size-ref: clamp(2.295rem, 5.304vw, 4.59rem);
-  --hero-gap: calc(
-    (100dvh - 4rem - var(--hero-card) - var(--title-size-ref)) / 3
-  );
-  --hero-band: calc(var(--hero-gap) * 2 + var(--title-size-ref));
+  --title-size: clamp(2.5rem, calc(5.8vw + 2px), calc(5.25rem + 2px));
+}
+
+@media (max-width: 767px) {
+  :root {
+    --hero-card-scale: 1;
+  }
 }
 
 /* Shared width for the on-image control pair (size picker + generate CTA) so
