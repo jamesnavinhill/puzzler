@@ -32,6 +32,9 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
   const didDrag = useRef(false);
   const wheelLock = useRef(0);
   const activeCardRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const titleNudgeRef = useRef(0);
+  const [titleNudge, setTitleNudge] = useState(0);
 
   const activeIndex = normalize(index);
   const activeImage = galleryImages[activeIndex];
@@ -56,6 +59,64 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
 
     return () => observer.disconnect();
   }, [activeIndex]);
+
+  // Optical centering: a font's ink sits high inside its line box (ascenders
+  // outweigh descenders), so the headline hugs the header and strands a void
+  // below it — for every typeface. Measure the rendered ink and translate it
+  // to the true middle between the header and the artwork. A transform cannot
+  // affect layout, so the carousel never moves, and because it is measured it
+  // stays correct for any font at any viewport size.
+  useEffect(() => {
+    const centerInk = () => {
+      const el = titleRef.current;
+      const card = activeCardRef.current;
+      const header = document.querySelector('header');
+      if (!el || !card || !header) {
+        return;
+      }
+
+      const cs = getComputedStyle(el);
+      const ctx = document.createElement('canvas').getContext('2d');
+      if (!ctx) {
+        return;
+      }
+      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const metrics = ctx.measureText(el.textContent ?? '');
+      if (!metrics.fontBoundingBoxAscent) {
+        return;
+      }
+
+      const lineHeight = parseFloat(cs.lineHeight);
+      const halfLeading =
+        (lineHeight - (metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent)) / 2;
+      const baselineY = halfLeading + metrics.fontBoundingBoxAscent;
+      const inkCenterInBox =
+        baselineY + (metrics.actualBoundingBoxDescent - metrics.actualBoundingBoxAscent) / 2;
+      const inkCenterCurrent =
+        el.getBoundingClientRect().top - titleNudgeRef.current + inkCenterInBox;
+      const inkCenterTarget =
+        (header.getBoundingClientRect().bottom + card.getBoundingClientRect().top) / 2;
+
+      const nudge = inkCenterTarget - inkCenterCurrent;
+      titleNudgeRef.current = nudge;
+      setTitleNudge(nudge);
+    };
+
+    centerInk();
+    // Re-measure once the real webfont is in (fonts.ready can resolve before
+    // the stylesheet's faces start loading, which would leave the fallback
+    // font's metrics baked into the nudge), plus a late safety pass.
+    document.fonts?.ready.then(centerInk);
+    document.fonts?.addEventListener('loadingdone', centerInk);
+    document.fonts?.load(`400 ${getComputedStyle(titleRef.current ?? document.body).fontSize} 'Young Serif'`).then(centerInk).catch(() => {});
+    window.addEventListener('resize', centerInk);
+    const latePass = window.setTimeout(centerInk, 1200);
+    return () => {
+      window.removeEventListener('resize', centerInk);
+      window.clearTimeout(latePass);
+      document.fonts?.removeEventListener('loadingdone', centerInk);
+    };
+  }, []);
 
   const move = (direction: number) => {
     // Always wrap, so the coverflow never hits a dead end.
@@ -138,11 +199,13 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
     >
       <div className="flex w-full shrink-0 items-center justify-center px-5 py-4 sm:py-5">
         <h1
+          ref={titleRef}
           className="whitespace-nowrap text-center leading-[1.02] tracking-[-0.045em] text-ink"
           style={{
             fontFamily: "'Young Serif', serif",
             fontWeight: 400,
             fontSize: 'var(--title-size)',
+            transform: `translateY(${titleNudge}px)`,
           }}
         >
           Puzzle your <span className="text-accent">Art.</span>
