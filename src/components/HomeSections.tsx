@@ -80,28 +80,31 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
 
           <div className="mx-auto mt-10 grid max-w-3xl gap-5 sm:gap-6 md:grid-cols-2">
             {/* Card 1: Upload an image */}
-            <div className="flex h-[17rem] flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+            <div className="flex h-[17rem] flex-col justify-between rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
               <h3 className="h-6 text-center text-sm font-semibold tracking-[-0.015em] text-ink">
                 Upload an image
               </h3>
 
-              <div className="mt-3.5 flex flex-1 flex-col items-center justify-center">
+              <div className="mt-3.5 flex flex-1 flex-col justify-between">
                 {isProcessing ? (
-                  <div className="flex h-36 w-24 flex-col items-center justify-center gap-2 rounded-xl border-2 border-line/60 bg-canvas/30 text-center">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" />
-                    <span className="text-[10px] font-medium text-muted">Preparing…</span>
+                  <div className="flex h-32 w-full flex-col items-center justify-center gap-2 rounded-xl border border-line/60 bg-canvas/30 text-center">
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-accent" />
+                    <span className="text-xs font-medium text-muted">Preparing image…</span>
                   </div>
                 ) : (
                   <FileUpload onImageSelect={onImageSelect} />
                 )}
-                <p className="mt-2.5 text-center text-[11px] text-muted/60">
-                  PNG, JPEG, WebP · 15MB max
-                </p>
+
+                <div className="flex h-11 items-center justify-center">
+                  <p className="text-center text-xs text-muted/60">
+                    PNG, JPEG, WebP · 15MB max
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* Card 2: Generate an Image */}
-            <div className="flex h-[17rem] flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+            <div className="flex h-[17rem] flex-col justify-between rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
               <h3 className="h-6 text-center text-sm font-semibold tracking-[-0.015em] text-ink">
                 Generate an Image
               </h3>
