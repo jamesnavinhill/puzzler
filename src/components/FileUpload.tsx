@@ -26,7 +26,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }
 
   return (
     <div
-      className={`group relative flex h-32 w-full items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
+      className={`group relative flex h-36 w-24 items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer ${
         isDragging
           ? 'border-accent bg-accent/10 shadow-[0_0_0_4px_color-mix(in_srgb,var(--accent)_10%,transparent)]'
           : 'border-line/80 bg-canvas/30 hover:border-accent/60 hover:bg-canvas/50'
