@@ -9,7 +9,8 @@ Where things stand, for whoever picks this up.
 - No `model` param → legacy chain unchanged (schnell → sdxl-lightning → dreamshaper), so the current deployed frontend keeps working untouched.
 - Rate-limit guard: in-memory 8/h per IP + 200/day per instance, `429 + Retry-After`. Zero frontend changes needed (App.tsx already surfaces JSON `error`).
 - The inert AI Gateway block was removed (2026-11-08): `gatewayHeader()` / `CF_AIG_GATEWAY_ID` no longer exist; every call hits Workers AI directly. Standing decision: **Workers AI only — no AI Gateway, no jami.studio account.**
-- `src/` was never touched (other thread owns it — do not clobber). Vercel env is net-unchanged (gateway var added then removed).
+- Deps: `@vercel/node` 23→30 + npm overrides (`@fastify/busboy`, `ajv`, `glob`, `minimatch`, `path-to-regexp`, `undici`) — **0 npm vulnerabilities** (2026-11-08, commit `02dc18c`).
+- UI thread's WIP was committed+pushed in `02dc18c` (deps-fix commit used a bare `git commit` that swept files the UI thread had pre-staged). Vercel is git-connected, so the push auto-deployed prod; the WIP UI was verified mounting in a browser (hero Generate pill, AI prompt box, gallery, player all render). Working tree was clean afterward — nothing lost. UI thread: commit your next iteration with explicit paths.
 
 ## Probing results — everything lives in `probe/`
 
@@ -43,7 +44,7 @@ Verdicts James signed off on: **klein-4b = default engine** (premium tiers indis
 
 ## Next steps
 
-1. Handler is live in prod (2026-11-08 deploy, verified end-to-end). The other thread's uncommitted src/ WIP was deliberately excluded — it ships whenever that thread deploys its own work.
+1. Handler live + verified (2026-11-08). The UI thread's WIP is also live (swept into `02dc18c`; git-connected deploy) — prod now runs exactly what was in the working tree.
 2. Frontend wiring (when UI thread is ready): model picker + optional reference upload (client must downscale refs to <512×512 — CDN thumbs are 640², use ffmpeg or canvas).
 3. Verify live via `https://puzzler.navinhill.com/api/generate` only (vercel.app URLs are SSO-401).
 4. CF dash (James): usage notifications at budget thresholds; confirm token scope is Workers AI run-only; invoice check re: gateway.
