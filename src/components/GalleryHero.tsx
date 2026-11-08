@@ -148,7 +148,7 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
         </h1>
       </div>
 
-      <div className="relative flex w-full shrink-0 items-center justify-center px-5 sm:px-0">
+      <div className="relative flex w-full shrink-0 items-center justify-center px-5 pb-12 sm:px-0">
         <div
           role="region"
           aria-roledescription="carousel"
