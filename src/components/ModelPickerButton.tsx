@@ -69,7 +69,7 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
   const handleOpenToggle = () => {
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const popoverHeight = 240;
+      const popoverHeight = 180;
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
 
@@ -93,6 +93,7 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
   const activeModel = AI_MODELS[selectedModel] ?? AI_MODELS['klein-4b'];
   const remainingBudget = Math.max(0, DAILY_BUDGET - telemetry.totalNeurons);
   const gensLeft = Math.floor(remainingBudget / activeModel.cost);
+  const totalGens = Math.floor(DAILY_BUDGET / activeModel.cost);
 
   return (
     <div className="relative flex-1">
@@ -100,13 +101,14 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
         ref={buttonRef}
         type="button"
         onClick={handleOpenToggle}
-        className="group flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-line bg-canvas/60 px-3 transition-colors hover:border-accent/50 focus:outline-none"
+        className="group flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-line bg-canvas/60 px-3 transition-colors hover:border-accent/50 focus:outline-none"
         title="Change AI model and view daily quota"
-        aria-label={`Model: ${activeModel.shortName}, ${gensLeft} generations remaining`}
+        aria-label={`Model: ${activeModel.shortName}, ${gensLeft} of ${totalGens} generations remaining`}
       >
         <span className="shrink-0 text-xs font-bold tabular-nums text-accent">
           {gensLeft}
         </span>
+        <span className="text-muted/40 select-none text-xs">|</span>
         <span className="max-w-[4.5rem] truncate text-xs font-medium text-ink transition-colors">
           {activeModel.shortName}
         </span>
@@ -123,13 +125,32 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
 
           {/* Naturally anchored popover */}
           <div
-            className={`absolute z-50 w-72 rounded-2xl border border-line bg-panel p-3.5 shadow-2xl backdrop-blur-md transition-all animate-fade-in ${
+            className={`absolute z-50 w-72 rounded-2xl border border-line bg-panel p-3 shadow-2xl backdrop-blur-md transition-all animate-fade-in ${
               placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
             } ${align === 'right' ? 'right-0' : 'left-0'}`}
           >
-            {/* Header with two-model group toggle */}
-            <div className="flex items-center justify-between pb-2.5 border-b border-line/60">
-              <span className="text-xs font-semibold text-ink">Model</span>
+            {/* Model details */}
+            <div className="space-y-1 text-xs">
+              <div className="rounded-xl bg-canvas/60 p-2.5 text-[11px] space-y-1.5 text-muted border border-line/40">
+                <div className="flex justify-between items-center">
+                  <span>Engine:</span>
+                  <span className="font-semibold text-ink">{activeModel.fullName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Generations:</span>
+                  <span className="font-bold tabular-nums text-accent">
+                    {gensLeft}/{totalGens}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Est. per run:</span>
+                  <span className="tabular-nums text-ink">{activeModel.estCostUsd}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer: model selector bottom left, Done button right */}
+            <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-line/60">
               <div
                 role="group"
                 aria-label="Select AI model"
@@ -153,56 +174,11 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
                   );
                 })}
               </div>
-            </div>
 
-            {/* Model details */}
-            <div className="mt-2.5 space-y-1.5 text-xs">
-              <div className="rounded-xl bg-canvas/60 p-2.5 text-[11px] space-y-1 text-muted border border-line/40">
-                <div className="flex justify-between items-center">
-                  <span>Engine:</span>
-                  <span className="font-semibold text-ink">{activeModel.fullName}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Generations left:</span>
-                  <span className="font-bold tabular-nums text-accent">{gensLeft}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Est. per run:</span>
-                  <span className="tabular-nums text-ink">{activeModel.estCostUsd}</span>
-                </div>
-              </div>
-
-              {telemetry.totalGenerated > 0 ? (
-                <div className="flex justify-between text-[11px] text-muted px-1 pt-0.5">
-                  <span>Used today:</span>
-                  <span className="font-semibold text-ink tabular-nums">
-                    {telemetry.totalGenerated} made
-                  </span>
-                </div>
-              ) : (
-                <p className="text-[11px] text-muted px-1 pt-0.5">
-                  Daily allowance: ~{Math.floor(DAILY_BUDGET / activeModel.cost)} runs
-                </p>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-line/60">
-              {telemetry.totalGenerated > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setTelemetry(clearLocalTelemetry())}
-                  className="text-[10px] text-muted hover:text-ink transition-colors"
-                >
-                  Clear tally
-                </button>
-              ) : (
-                <span />
-              )}
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded-lg bg-panel-2 px-2.5 py-1 text-[11px] font-medium text-ink hover:bg-line transition-colors"
+                className="rounded-lg bg-panel-2 px-3 py-1 text-[11px] font-medium text-ink hover:bg-line transition-colors"
               >
                 Done
               </button>

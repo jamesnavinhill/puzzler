@@ -26,9 +26,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }
 
   return (
     <div
-      className={`group relative flex flex-1 w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed p-6 text-center transition-all duration-300 cursor-pointer ${
+      className={`group relative flex flex-1 w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border-2 border-dashed p-3 text-center transition-all duration-300 cursor-pointer ${
         isDragging
-          ? 'border-accent bg-accent/10 shadow-[0_0_0_6px_color-mix(in_srgb,var(--accent)_10%,transparent)]'
+          ? 'border-accent bg-accent/10 shadow-[0_0_0_4px_color-mix(in_srgb,var(--accent)_10%,transparent)]'
           : 'border-line/80 bg-canvas/40 hover:border-accent/60 hover:bg-canvas/65'
       } ${className}`}
       onDragOver={(event) => {
@@ -47,13 +47,13 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }
         title="Choose an image"
       />
 
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-panel-2 text-accent shadow-sm transition-transform duration-300 group-hover:scale-105">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-panel-2 text-accent shadow-sm transition-transform duration-300 group-hover:scale-105">
         <svg
-          className="h-6 w-6"
+          className="h-4 w-4"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
-          strokeWidth={1.8}
+          strokeWidth={2}
           aria-hidden="true"
         >
           <path
@@ -64,7 +64,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onImageSelect, className = '' }
         </svg>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         <p className="text-xs font-semibold text-ink">
           {isDragging ? 'Drop it here' : 'Drop an image here'}
         </p>

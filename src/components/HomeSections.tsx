@@ -78,36 +78,36 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
             ))}
           </h2>
 
-          <div className="mx-auto mt-10 grid max-w-3xl gap-5 sm:gap-6 md:grid-cols-2">
+          <div className="mx-auto mt-10 grid max-w-3xl gap-4 sm:gap-5 md:grid-cols-2">
             {/* Card 1: Upload an image */}
-            <div className="flex h-[24rem] sm:h-[26rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
-              <h3 className="text-center text-base sm:text-lg font-semibold tracking-[-0.02em] text-ink">
+            <div className="flex h-[12.5rem] sm:h-[13.5rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-3.5 sm:p-4">
+              <h3 className="text-center text-sm font-semibold tracking-[-0.02em] text-ink">
                 Upload an image
               </h3>
 
-              <div className="my-3 flex flex-1 flex-col">
+              <div className="my-2 flex flex-1 flex-col">
                 {isProcessing ? (
-                  <div className="flex flex-1 w-full flex-col items-center justify-center gap-3 rounded-2xl border border-line bg-canvas/40 p-6 text-center">
-                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-accent" />
-                    <p className="text-xs font-semibold text-ink">Preparing your image…</p>
+                  <div className="flex flex-1 w-full flex-col items-center justify-center gap-2 rounded-xl border border-line bg-canvas/40 p-3 text-center">
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-line border-t-accent" />
+                    <p className="text-xs font-semibold text-ink">Preparing image…</p>
                   </div>
                 ) : (
                   <FileUpload onImageSelect={onImageSelect} />
                 )}
               </div>
 
-              <p className="text-center text-xs text-muted">
+              <p className="text-center text-[11px] text-muted">
                 PNG, JPEG, WebP · 15MB max
               </p>
             </div>
 
             {/* Card 2: Generate an Image */}
-            <div className="flex h-[24rem] sm:h-[26rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-5 sm:p-6">
-              <h3 className="text-center text-base sm:text-lg font-semibold tracking-[-0.02em] text-ink">
+            <div className="flex h-[12.5rem] sm:h-[13.5rem] flex-col justify-between rounded-2xl border border-line bg-panel/55 p-3.5 sm:p-4">
+              <h3 className="text-center text-sm font-semibold tracking-[-0.02em] text-ink">
                 Generate an Image
               </h3>
 
-              <div className="my-3 flex flex-1 flex-col">
+              <div className="my-2 flex flex-1 flex-col">
                 <label htmlFor="ai-prompt" className="sr-only">
                   Describe the image to generate
                 </label>
@@ -115,6 +115,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                   id="ai-prompt"
                   value={aiPrompt}
                   maxLength={300}
+                  rows={2}
                   onChange={(event) => onAiPromptChange(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' && !event.shiftKey) {
@@ -123,11 +124,11 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                     }
                   }}
                   placeholder="A greenhouse on a winter night…"
-                  className="flex-1 w-full resize-none rounded-xl border border-line bg-canvas/40 p-3.5 text-sm leading-relaxed text-ink placeholder:text-muted/60 focus:border-accent/70 focus:outline-none"
+                  className="flex-1 w-full resize-none rounded-xl border border-line bg-canvas/40 p-2.5 text-xs sm:text-sm leading-relaxed text-ink placeholder:text-muted/60 focus:border-accent/70 focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 <ModelPickerButton
                   selectedModel={selectedModel}
                   onModelChange={onSelectedModelChange}
@@ -136,7 +137,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                   type="button"
                   onClick={onGenerateAi}
                   disabled={!aiPrompt.trim() || isGenerating}
-                  className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-xs sm:text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-xs sm:text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isGenerating ? (
                     <>
