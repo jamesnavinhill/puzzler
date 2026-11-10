@@ -264,7 +264,7 @@ const App: React.FC = () => {
             </button>
 
             {showGameplayHeader && (
-              <div className="flex flex-1 items-center justify-center min-w-0 px-2 sm:px-4">
+              <div className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2.5 min-w-0 px-2 sm:px-4">
                 <div className="relative flex flex-col items-center justify-center shrink-0">
                   <div className="h-1 w-8 sm:h-1.5 sm:w-20 md:w-28 overflow-hidden rounded-full bg-panel-2">
                     <div
@@ -276,6 +276,29 @@ const App: React.FC = () => {
                     {completionPercent}%
                   </span>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setGameSettings((settings) => ({
+                      ...settings,
+                      showPreview: !settings.showPreview,
+                    }))
+                  }
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full transition-colors sm:h-9 sm:w-9 ${
+                    gameSettings.showPreview
+                      ? 'bg-accent/15 text-accent'
+                      : 'text-muted hover:bg-panel-2 hover:text-ink'
+                  }`}
+                  title="Toggle preview"
+                  aria-label="Toggle preview"
+                  aria-pressed={gameSettings.showPreview}
+                >
+                  <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
               </div>
             )}
           </div>
@@ -289,31 +312,6 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex shrink-0 items-center justify-self-end gap-1 sm:gap-2">
-            {gameState === 'playing' && (
-              <button
-                type="button"
-                onClick={() =>
-                  setGameSettings((settings) => ({
-                    ...settings,
-                    showPreview: !settings.showPreview,
-                  }))
-                }
-                className={`grid h-7.5 w-7.5 place-items-center rounded-full transition-colors sm:h-9 sm:w-9 ${
-                  gameSettings.showPreview
-                    ? 'bg-accent/15 text-accent'
-                    : 'text-muted hover:bg-panel-2 hover:text-ink'
-                }`}
-                title="Toggle preview"
-                aria-label="Toggle preview"
-                aria-pressed={gameSettings.showPreview}
-              >
-                <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-            )}
-
             <ThemeCustomizer config={theme} onChange={setTheme} />
 
             <button
