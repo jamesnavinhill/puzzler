@@ -275,15 +275,6 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                         })}
                       </div>
                     </div>
-
-                    <div
-                      className="absolute inset-x-0 top-[75%] z-30 flex translate-y-1/2 justify-center"
-                      onPointerDown={stopDrag}
-                    >
-                      <GeneratePuzzleButton
-                        onClick={() => onStart(activeImage, selectedPieces)}
-                      />
-                    </div>
                   </div>
                 );
               }
@@ -320,8 +311,12 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
         </div>
       </div>
 
-      {/* Bottom zone: Balances the top zone so carousel remains centered in viewport */}
-      <div className="w-full flex-1 min-h-0" aria-hidden="true" />
+      {/* Bottom zone: Mirrors the title placement under the carousel */}
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center px-5">
+        <GeneratePuzzleButton
+          onClick={() => onStart(activeImage, selectedPieces)}
+        />
+      </div>
     </section>
   );
 };
