@@ -244,15 +244,31 @@ const App: React.FC = () => {
   return (
     <div className="flex h-full flex-col bg-canvas text-ink">
       <header className="relative z-30 shrink-0 border-b border-line bg-canvas/85 backdrop-blur-xl">
-        <div className="mx-auto grid h-16 w-full max-w-[1600px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 sm:gap-3 sm:px-5">
-          <button
-            type="button"
-            onClick={resetGame}
-            className="group flex shrink-0 items-center justify-self-start rounded-xl text-left"
-            aria-label="Puzzled home"
-          >
-            <BrandMark className="h-7 w-auto sm:h-8" />
-          </button>
+        <div className="mx-auto grid h-16 w-full max-w-[1600px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-2.5 sm:gap-3 sm:px-5">
+          <div className="flex items-center gap-2 sm:gap-3.5 justify-self-start min-w-0">
+            <button
+              type="button"
+              onClick={resetGame}
+              className="group flex shrink-0 items-center rounded-xl text-left"
+              aria-label="Puzzled home"
+            >
+              <BrandMark className="h-6.5 w-auto sm:h-8" />
+            </button>
+
+            {showGameplayHeader && (
+              <div className="relative flex flex-col items-center justify-center shrink-0">
+                <div className="h-1.5 w-12 sm:w-20 md:w-28 overflow-hidden rounded-full bg-panel-2">
+                  <div
+                    className="h-full bg-accent transition-[width] duration-300 ease-out"
+                    style={{ width: `${completionPercent}%` }}
+                  />
+                </div>
+                <span className="absolute top-[calc(100%+2px)] text-[9px] sm:text-[10px] font-semibold tabular-nums text-muted/80">
+                  {completionPercent}%
+                </span>
+              </div>
+            )}
+          </div>
 
           <div
             className={`min-w-0 justify-self-center transition-opacity duration-300 ${
@@ -263,20 +279,6 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex shrink-0 items-center justify-self-end gap-1 sm:gap-2">
-            {showGameplayHeader && (
-              <div className="hidden items-center gap-2 sm:flex">
-                <div className="h-1.5 w-24 overflow-hidden rounded-full bg-panel-2 md:w-32">
-                  <div
-                    className="h-full bg-accent transition-[width] duration-300 ease-out"
-                    style={{ width: `${completionPercent}%` }}
-                  />
-                </div>
-                <span className="min-w-[2.5rem] text-right text-xs font-semibold tabular-nums text-muted">
-                  {completionPercent}%
-                </span>
-              </div>
-            )}
-
             {gameState === 'playing' && (
               <button
                 type="button"
@@ -286,7 +288,7 @@ const App: React.FC = () => {
                     showPreview: !settings.showPreview,
                   }))
                 }
-                className={`grid h-8 w-8 place-items-center rounded-full transition-colors sm:h-9 sm:w-9 ${
+                className={`grid h-7.5 w-7.5 place-items-center rounded-full transition-colors sm:h-9 sm:w-9 ${
                   gameSettings.showPreview
                     ? 'bg-accent/15 text-accent'
                     : 'text-muted hover:bg-panel-2 hover:text-ink'
@@ -295,7 +297,7 @@ const App: React.FC = () => {
                 aria-label="Toggle preview"
                 aria-pressed={gameSettings.showPreview}
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
@@ -309,7 +311,7 @@ const App: React.FC = () => {
               onClick={() =>
                 setTheme((current) => ({ ...current, isDark: !current.isDark }))
               }
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition-colors hover:text-accent active:text-accent focus:outline-none focus-visible:outline-none focus-visible:text-accent sm:h-9 sm:w-9"
+              className="grid h-7.5 w-7.5 shrink-0 place-items-center rounded-full text-muted transition-colors hover:text-accent active:text-accent focus:outline-none focus-visible:outline-none focus-visible:text-accent sm:h-9 sm:w-9"
               aria-label={theme.isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme.isDark ? (

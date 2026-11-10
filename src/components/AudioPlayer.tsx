@@ -16,15 +16,13 @@ const formatTime = (seconds: number) => {
 const AudioPlayer: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const autoplayRef = useRef(false);
-  const titleViewportRef = useRef<HTMLSpanElement>(null);
-  const titleTextRef = useRef<HTMLSpanElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [titleOverflows, setTitleOverflows] = useState(false);
-  const [titleShift, setTitleShift] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const expandTimerRef = useRef<number | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(() => {
@@ -42,6 +40,24 @@ const AudioPlayer: React.FC = () => {
     }
   });
 
+  const triggerBriefExpand = useCallback(() => {
+    setIsExpanded(true);
+    if (expandTimerRef.current) {
+      window.clearTimeout(expandTimerRef.current);
+    }
+    expandTimerRef.current = window.setTimeout(() => {
+      setIsExpanded(false);
+    }, 3800);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (expandTimerRef.current) {
+        window.clearTimeout(expandTimerRef.current);
+      }
+    };
+  }, []);
+
   const currentTrack = NAVIN_HILL_TRACKS[currentIndex];
   const currentAlbum = NAVIN_HILL_ALBUMS.find(
     (album) => album.id === currentTrack.albumId
@@ -51,31 +67,6 @@ const AudioPlayer: React.FC = () => {
     () => new Map(NAVIN_HILL_TRACKS.map((track, index) => [track.id, index])),
     []
   );
-
-  useEffect(() => {
-    const viewport = titleViewportRef.current;
-    const text = titleTextRef.current;
-    if (!viewport || !text) {
-      return;
-    }
-
-    const measure = () => {
-      const overflow = text.scrollWidth - viewport.clientWidth;
-      setTitleOverflows(overflow > 1);
-      setTitleShift(overflow > 1 ? overflow + 8 : 0);
-    };
-
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(viewport);
-    window.addEventListener('resize', measure);
-    void document.fonts?.ready.then(measure).catch(() => undefined);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, [displayTitle]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -164,6 +155,8 @@ const AudioPlayer: React.FC = () => {
         setShowQueue(false);
       }
 
+      triggerBriefExpand();
+
       if (normalized === currentIndex) {
         if (autoplay) {
           setHasError(false);
@@ -175,7 +168,7 @@ const AudioPlayer: React.FC = () => {
       autoplayRef.current = autoplay;
       setCurrentIndex(normalized);
     },
-    [currentIndex]
+    [currentIndex, triggerBriefExpand]
   );
 
   const togglePlay = () => {
@@ -186,15 +179,20 @@ const AudioPlayer: React.FC = () => {
 
     if (audio.paused) {
       setHasError(false);
+      triggerBriefExpand();
       void audio.play().catch(() => setIsPlaying(false));
     } else {
       audio.pause();
     }
   };
 
-  const playNext = () => selectTrack(currentIndex + 1, true, false);
+  const playNext = () => {
+    triggerBriefExpand();
+    selectTrack(currentIndex + 1, true, false);
+  };
 
   const playPrevious = () => {
+    triggerBriefExpand();
     const audio = audioRef.current;
     if (audio && audio.currentTime > 3) {
       audio.currentTime = 0;
@@ -229,50 +227,81 @@ const AudioPlayer: React.FC = () => {
         }}
       />
 
-      <div className="grid w-[clamp(9rem,50vw,13.5rem)] shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 rounded-full border border-line bg-panel/85 p-1.5 shadow-sm backdrop-blur-xl sm:w-[22rem] md:w-[27rem] lg:w-[30rem]">
-        <button
-          type="button"
-          onClick={() => setShowQueue((open) => !open)}
-          className="group min-w-0 justify-self-stretch rounded-full px-2 py-0.5 text-center"
-          aria-label="Open Navin Hill playlist"
-          aria-expanded={showQueue}
-          aria-haspopup="dialog"
-          title="Open playlist"
-        >
-          <span className="block min-w-0">
-            <span
-              ref={titleViewportRef}
-              className={`block overflow-hidden whitespace-nowrap ${
-                titleOverflows ? 'text-left' : 'text-center'
-              }`}
+      <div
+        onMouseEnter={() => {
+          if (expandTimerRef.current) {
+            window.clearTimeout(expandTimerRef.current);
+          }
+          setIsExpanded(true);
+        }}
+        onMouseLeave={() => {
+          if (expandTimerRef.current) {
+            window.clearTimeout(expandTimerRef.current);
+          }
+          expandTimerRef.current = window.setTimeout(() => {
+            setIsExpanded(false);
+          }, 600);
+        }}
+        className="group/player relative flex items-center rounded-full border border-black/15 bg-black/[0.08] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(0,0,0,0.06)] dark:border-white/[0.07] dark:bg-black/50 dark:shadow-[inset_0_2px_4.5px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(0,0,0,0.25)] p-1 transition-all duration-300"
+      >
+        {/* Album / Track Section (collapsed to playlist icon) */}
+        <div className="flex items-center min-w-0">
+          <button
+            type="button"
+            onClick={() => setShowQueue((open) => !open)}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition-colors hover:text-ink focus:outline-none"
+            aria-label="Open Navin Hill playlist"
+            aria-expanded={showQueue}
+            aria-haspopup="dialog"
+            title="Open playlist"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              aria-hidden="true"
             >
-              <span
-                key={currentTrack.id}
-                ref={titleTextRef}
-                className={`inline-block text-[11px] font-semibold leading-tight text-ink transition-colors group-hover:text-accent ${
-                  titleOverflows ? 'title-marquee' : ''
-                }`}
-                style={{ '--title-shift': `-${titleShift}px` } as React.CSSProperties}
-              >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"
+              />
+            </svg>
+          </button>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              isExpanded
+                ? 'max-w-[7.5rem] sm:max-w-[11rem] md:max-w-[13rem] opacity-100 pl-1 pr-2'
+                : 'max-w-0 opacity-0 p-0 pointer-events-none'
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => setShowQueue(true)}
+              className="group/text flex flex-col items-start text-left min-w-0 w-full"
+              title="Open playlist"
+            >
+              <span className="block w-full truncate text-[11px] font-semibold leading-tight text-ink transition-colors group-hover/text:text-accent">
                 {displayTitle}
               </span>
-            </span>
-            <span className="mt-0.5 block truncate text-[10px] leading-tight text-muted transition-colors group-hover:text-ink">
-              {currentTrack.album} · {currentTrack.trackNumber}/
-              {currentAlbum?.tracks.length ?? 0}
-            </span>
-          </span>
-        </button>
+              <span className="mt-0.5 block w-full truncate text-[10px] leading-tight text-muted transition-colors group-hover/text:text-ink">
+                {currentTrack.album}
+              </span>
+            </button>
+          </div>
+        </div>
 
-        <div className="flex shrink-0 items-center justify-center gap-0.5">
-          <span className="hidden h-5 w-px bg-line/70 md:block" aria-hidden="true" />
-
+        {/* Center transport controls */}
+        <div className="flex shrink-0 items-center justify-center gap-0.5 px-0.5">
           <button
             type="button"
             onClick={playPrevious}
             aria-label="Previous track"
             title="Previous"
-            className="hidden h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink sm:grid"
+            className="hidden h-7.5 w-7.5 place-items-center rounded-full text-muted transition-colors hover:bg-black/10 hover:text-ink dark:hover:bg-white/10 sm:grid"
           >
             <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
@@ -284,16 +313,16 @@ const AudioPlayer: React.FC = () => {
             onClick={togglePlay}
             aria-label={isPlaying ? 'Pause music' : 'Play music'}
             title={isPlaying ? 'Pause' : 'Play'}
-            className="grid h-9 w-9 place-items-center rounded-full bg-accent text-on-accent shadow-sm transition-transform hover:brightness-105 active:scale-95"
+            className="grid h-8 w-8 place-items-center rounded-full bg-accent text-on-accent shadow-sm transition-transform hover:brightness-105 active:scale-95 sm:h-8.5 sm:w-8.5"
           >
             {isLoading && isPlaying ? (
               <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-on-accent/30 border-t-on-accent" />
             ) : isPlaying ? (
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
               </svg>
             ) : (
-              <svg className="ml-0.5 h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="ml-0.5 h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -304,43 +333,54 @@ const AudioPlayer: React.FC = () => {
             onClick={playNext}
             aria-label="Next track"
             title="Next"
-            className="hidden h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-ink sm:grid"
+            className="hidden h-7.5 w-7.5 place-items-center rounded-full text-muted transition-colors hover:bg-black/10 hover:text-ink dark:hover:bg-white/10 sm:grid"
           >
             <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
             </svg>
           </button>
-
-          <span className="hidden h-5 w-px bg-line/70 md:block" aria-hidden="true" />
         </div>
 
-        <div className="hidden min-w-0 items-center justify-center gap-1 md:flex">
+        {/* Volume Section (collapsed to volume icon) */}
+        <div className="flex items-center min-w-0">
           <button
             type="button"
-            onClick={() => setVolume((value) => (value > 0 ? 0 : 0.5))}
+            onClick={() => {
+              setVolume((value) => (value > 0 ? 0 : 0.5));
+              triggerBriefExpand();
+            }}
             aria-label={volume === 0 ? 'Unmute music' : 'Mute music'}
             title={volume === 0 ? 'Unmute' : 'Mute'}
-            className="grid h-7 w-7 place-items-center rounded-full text-muted transition-colors hover:text-ink"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition-colors hover:text-ink focus:outline-none"
           >
             <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M14 3.23v17.54a1 1 0 01-1.64.77L6.73 17H3a1 1 0 01-1-1v-8a1 1 0 011-1h3.73l5.63-4.54A1 1 0 0114 3.23zM17.54 8.46a1 1 0 10-1.41 1.41 3 3 0 010 4.24 1 1 0 001.41 1.41 5 5 0 000-7.06z" />
             </svg>
           </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={(event) => setVolume(Number(event.target.value))}
-            aria-label="Music volume"
-            className="volume-range h-1 w-16 cursor-pointer appearance-none rounded-full"
-            style={{
-              background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
-                volume * 100
-              }%, var(--app-line) ${volume * 100}%, var(--app-line) 100%)`,
-            }}
-          />
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              isExpanded
+                ? 'max-w-[4.5rem] sm:max-w-[5.5rem] opacity-100 pr-2 pl-0.5'
+                : 'max-w-0 opacity-0 p-0 pointer-events-none'
+            }`}
+          >
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={(event) => setVolume(Number(event.target.value))}
+              aria-label="Music volume"
+              className="volume-range h-1 w-12 sm:w-16 cursor-pointer appearance-none rounded-full"
+              style={{
+                background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+                  volume * 100
+                }%, var(--app-line) ${volume * 100}%, var(--app-line) 100%)`,
+              }}
+            />
+          </div>
         </div>
       </div>
 

@@ -63,7 +63,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
 
       {/* Cards section (no divider above, space between 1-2-3 preserved, bottom expanded) */}
       <section aria-label="Image creation options">
-        <div className="mx-auto max-w-6xl px-5 pt-16 pb-12 sm:px-6 sm:pt-20 sm:pb-14">
+        <div className="mx-auto max-w-6xl px-5 pt-16 pb-6 sm:px-6 sm:pt-20 sm:pb-7">
           <h3 className="text-center text-xl sm:text-2xl font-semibold tracking-[-0.03em] text-ink mb-8 sm:mb-10">
             Upload your own, generate with AI, or choose from the{' '}
             <a
@@ -138,7 +138,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
 
       {/* Gallery section (no divider line underneath the cards) */}
       <section ref={gallerySectionRef} id="gallery-section" aria-labelledby="gallery-title" className="scroll-mt-6">
-        <div className="mx-auto max-w-6xl px-5 pt-8 pb-16 sm:px-6 sm:pt-10 sm:pb-20">
+        <div className="mx-auto max-w-6xl px-5 pt-4 pb-16 sm:px-6 sm:pt-5 sm:pb-20">
           <div className="flex items-center justify-between gap-4">
             <h2
               id="gallery-title"
