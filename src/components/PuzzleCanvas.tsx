@@ -42,10 +42,10 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [completedCount, setCompletedCount] = useState(0);
 
-  // Pinch-to-zoom state: the fingers currently down, plus the gesture's
+  // Pinch-to-zoom state: the pointers currently down, plus the gesture's
   // anchor (the world point under the starting midpoint, which stays glued
-  // to the moving midpoint — so two fingers zoom and pan in one motion).
-  const activeTouchesRef = useRef(new Map<number, { x: number; y: number }>());
+  // to the moving midpoint — so a pinch zooms and pans in one motion).
+  const activePointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{
     startDistance: number;
     startScale: number;
@@ -363,15 +363,11 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     return () => cancelAnimationFrame(handle);
   }, [render]);
 
-  const getMousePos = (event: React.MouseEvent | React.TouchEvent | WheelEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) {
+  const getCanvasPos = (clientX: number, clientY: number) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) {
       return { x: 0, y: 0 };
     }
-
-    const rect = canvas.getBoundingClientRect();
-    const clientX = 'touches' in event ? event.touches[0].clientX : (event as React.MouseEvent).clientX;
-    const clientY = 'touches' in event ? event.touches[0].clientY : (event as React.MouseEvent).clientY;
 
     return {
       x: clientX - rect.left,
@@ -392,7 +388,7 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
 
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
-      const { x, y } = getMousePos(event);
+      const { x, y } = getCanvasPos(event.clientX, event.clientY);
       const sensitivity = 0.001;
       const delta = -event.deltaY * sensitivity;
       const newScale = Math.min(Math.max(MIN_SCALE, transform.scale + delta), MAX_SCALE);
@@ -434,8 +430,7 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
 
   const resetView = () => setTransform({ x: 0, y: 0, scale: 1 });
 
-  const handlePointerDown = (event: React.MouseEvent | React.TouchEvent) => {
-    const { x, y } = getMousePos(event);
+  const beginDragOrPan = (x: number, y: number) => {
     const worldPos = toWorld(x, y);
     setLastMousePos({ x, y });
 
@@ -464,8 +459,7 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     }
   };
 
-  const handlePointerMove = (event: React.MouseEvent | React.TouchEvent) => {
-    const { x, y } = getMousePos(event);
+  const moveDragOrPan = (x: number, y: number) => {
     const worldPos = toWorld(x, y);
 
     if (draggedPieceId !== null) {
@@ -496,7 +490,7 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     }
   };
 
-  const handlePointerUp = () => {
+  const endDragOrPan = () => {
     setIsPanning(false);
 
     if (draggedPieceId === null) {
@@ -545,80 +539,33 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     setDraggedPieceId(null);
   };
 
-  const trackTouches = (touches: React.TouchList) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) {
-      return;
-    }
-    for (let i = 0; i < touches.length; i += 1) {
-      const touch = touches[i];
-      activeTouchesRef.current.set(touch.identifier, {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top,
-      });
-    }
-  };
-
-  const handleTouchStart = (event: React.TouchEvent) => {
-    trackTouches(event.changedTouches);
-
-    if (activeTouchesRef.current.size === 2) {
-      // Second finger down: whatever the first finger was doing (dragging a
-      // piece, panning) is cancelled where it stands. The pinch itself is
-      // run by the native listeners below, which can preventDefault — React
-      // attaches its touch listeners passively, so a React-side pinch can
-      // be taken over (touchcancel) by the browser's own pinch gesture.
-      setDraggedPieceId(null);
-      setIsPanning(false);
-      pinchedRef.current = true;
-      return;
-    }
-
-    if (activeTouchesRef.current.size === 1 && !pinchedRef.current) {
-      handlePointerDown(event);
-    }
-  };
-
-  const handleTouchMove = (event: React.TouchEvent) => {
-    trackTouches(event.touches);
-
-    if (pinchRef.current) {
-      // Pinch in progress: the native listeners own it.
-      return;
-    }
-
-    if (!pinchedRef.current && activeTouchesRef.current.size === 1) {
-      handlePointerMove(event);
-    }
-  };
-
-  // Native pinch handling, attached directly to the canvas as non-passive
-  // listeners so two-finger moves can be preventDefaulted — that is what
-  // stops the browser from claiming the gesture (and firing touchcancel)
-  // on real devices.
+  // Every canvas interaction — mouse, touch, pen — runs through Pointer
+  // Events, the one input model every current browser implements the same
+  // way. The canvas carries touch-action:none, so the browser never claims
+  // a gesture for its own scrolling or page zoom; pointer capture keeps a
+  // pointer's moves flowing to the canvas even off its edge. Two pointers
+  // down is a pinch: it cancels any drag in progress and zooms/pans around
+  // the pointers' midpoint.
   useEffect(() => {
     transformRef.current = transform;
   }, [transform]);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
+  const handlePointerDown = (event: React.PointerEvent) => {
+    const pos = getCanvasPos(event.clientX, event.clientY);
+    activePointersRef.current.set(event.pointerId, pos);
+
+    try {
+      canvasRef.current?.setPointerCapture(event.pointerId);
+    } catch {
+      /* Capture is best-effort; the gesture still works without it. */
     }
 
-    const point = (touch: Touch) => {
-      const rect = canvas.getBoundingClientRect();
-      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
-    };
+    if (activePointersRef.current.size === 2) {
+      setDraggedPieceId(null);
+      setIsPanning(false);
+      pinchedRef.current = true;
 
-    const onTouchStart = (event: TouchEvent) => {
-      if (event.touches.length !== 2) {
-        return;
-      }
-      event.preventDefault();
-
-      const first = point(event.touches[0]);
-      const second = point(event.touches[1]);
+      const [first, second] = [...activePointersRef.current.values()];
       const midpoint = {
         x: (first.x + second.x) / 2,
         y: (first.y + second.y) / 2,
@@ -635,17 +582,25 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
           y: (midpoint.y - current.y) / current.scale,
         },
       };
-    };
+      return;
+    }
 
-    const onTouchMove = (event: TouchEvent) => {
-      const pinch = pinchRef.current;
-      if (!pinch || event.touches.length !== 2) {
-        return;
-      }
-      event.preventDefault();
+    if (activePointersRef.current.size === 1 && !pinchedRef.current) {
+      beginDragOrPan(pos.x, pos.y);
+    }
+  };
 
-      const first = point(event.touches[0]);
-      const second = point(event.touches[1]);
+  const handlePointerMove = (event: React.PointerEvent) => {
+    if (!activePointersRef.current.has(event.pointerId)) {
+      return;
+    }
+
+    const pos = getCanvasPos(event.clientX, event.clientY);
+    activePointersRef.current.set(event.pointerId, pos);
+
+    const pinch = pinchRef.current;
+    if (pinch && activePointersRef.current.size === 2) {
+      const [first, second] = [...activePointersRef.current.values()];
       const distance = Math.max(
         1,
         Math.hypot(first.x - second.x, first.y - second.y)
@@ -664,47 +619,33 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
         x: midpoint.x - pinch.anchorWorld.x * scale,
         y: midpoint.y - pinch.anchorWorld.y * scale,
       });
-    };
-
-    const onTouchEnd = (event: TouchEvent) => {
-      if (event.touches.length < 2) {
-        pinchRef.current = null;
-      }
-    };
-
-    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
-    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
-    canvas.addEventListener('touchend', onTouchEnd);
-    canvas.addEventListener('touchcancel', onTouchEnd);
-    return () => {
-      canvas.removeEventListener('touchstart', onTouchStart);
-      canvas.removeEventListener('touchmove', onTouchMove);
-      canvas.removeEventListener('touchend', onTouchEnd);
-      canvas.removeEventListener('touchcancel', onTouchEnd);
-    };
-  }, []);
-
-  const handleTouchEnd = (event: React.TouchEvent) => {
-    for (let i = 0; i < event.changedTouches.length; i += 1) {
-      activeTouchesRef.current.delete(event.changedTouches[i].identifier);
+      return;
     }
 
-    if (activeTouchesRef.current.size === 0) {
+    if (!pinchedRef.current && activePointersRef.current.size === 1) {
+      moveDragOrPan(pos.x, pos.y);
+    }
+  };
+
+  const handlePointerEnd = (event: React.PointerEvent) => {
+    activePointersRef.current.delete(event.pointerId);
+
+    if (activePointersRef.current.size === 0) {
       // A pinch ending never snaps a piece or finishes a pan — the drag was
-      // already cancelled when the second finger landed.
+      // already cancelled when the second pointer landed.
       const wasPinch = pinchedRef.current;
       pinchedRef.current = false;
       pinchRef.current = null;
       if (!wasPinch) {
-        handlePointerUp();
+        endDragOrPan();
       }
       return;
     }
 
-    if (pinchRef.current) {
-      // Down to one finger: the pinch is over, and the leftover finger must
-      // not pick the gesture back up as a drag (pinchedRef stays set until
-      // every finger has lifted).
+    if (activePointersRef.current.size < 2) {
+      // Down to one pointer: the pinch is over, and the leftover pointer
+      // must not pick the gesture back up as a drag (pinchedRef stays set
+      // until every pointer has lifted).
       pinchRef.current = null;
     }
   };
@@ -745,14 +686,10 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
         ref={canvasRef}
         width={containerDimensions.width}
         height={containerDimensions.height}
-        onMouseDown={handlePointerDown}
-        onMouseMove={handlePointerMove}
-        onMouseUp={handlePointerUp}
-        onMouseLeave={handlePointerUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
         className="block h-full w-full cursor-crosshair touch-none"
       />
 
