@@ -136,7 +136,8 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
       aria-label="Puzzle your art"
       className="relative flex h-[calc(100dvh-4rem)] flex-col items-center overflow-hidden"
     >
-      <div className="flex w-full shrink-0 items-center justify-center px-5 py-4 sm:py-5">
+      {/* Top zone: Title naturally centered between header and carousel */}
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center px-5">
         <h1
           className="whitespace-nowrap text-center leading-[1.02] tracking-[-0.045em] text-ink"
           style={{
@@ -149,7 +150,8 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
         </h1>
       </div>
 
-      <div className="relative flex min-h-0 w-full flex-1 items-center justify-center px-5 sm:px-0">
+      {/* Middle zone: Carousel */}
+      <div className="relative flex shrink-0 w-full items-center justify-center px-5 sm:px-0">
         <div
           role="region"
           aria-roledescription="carousel"
@@ -317,6 +319,9 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
           </p>
         </div>
       </div>
+
+      {/* Bottom zone: Balances the top zone so carousel remains centered in viewport */}
+      <div className="w-full flex-1 min-h-0" aria-hidden="true" />
     </section>
   );
 };
