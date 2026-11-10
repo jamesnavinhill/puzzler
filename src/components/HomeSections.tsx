@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import FileUpload from './FileUpload';
 import BrandMark from './BrandMark';
 import { BRAND_ASSETS } from '../data/brand';
@@ -31,6 +31,12 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
   onSelectedModelChange,
 }) => {
   const [gallerySource, setGallerySource] = useState<'nh' | 'globe'>('nh');
+  const gallerySectionRef = useRef<HTMLElement>(null);
+
+  const handleScrollToGallery = (event: React.MouseEvent) => {
+    event.preventDefault();
+    gallerySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div className="relative z-10">
@@ -57,9 +63,16 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
 
       {/* Cards section (no divider above, space between 1-2-3 preserved, bottom expanded) */}
       <section aria-label="Image creation options">
-        <div className="mx-auto max-w-6xl px-5 pt-16 pb-24 sm:px-6 sm:pt-20 sm:pb-28">
+        <div className="mx-auto max-w-6xl px-5 pt-16 pb-12 sm:px-6 sm:pt-20 sm:pb-14">
           <h3 className="text-center text-xl sm:text-2xl font-semibold tracking-[-0.03em] text-ink mb-8 sm:mb-10">
-            Upload your own, Generate with AI, Choose from the Gallery
+            Upload your own, generate with AI, or choose from the{' '}
+            <a
+              href="#gallery-section"
+              onClick={handleScrollToGallery}
+              className="text-accent underline underline-offset-4 decoration-accent/40 transition-colors hover:decoration-accent hover:brightness-110 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              Gallery
+            </a>
           </h3>
 
           <div className="mx-auto flex flex-col sm:flex-row items-stretch justify-center gap-5 sm:gap-6 max-w-3xl">
@@ -129,8 +142,8 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
       </section>
 
       {/* Gallery section (no divider line underneath the cards) */}
-      <section aria-labelledby="gallery-title">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
+      <section ref={gallerySectionRef} id="gallery-section" aria-labelledby="gallery-title" className="scroll-mt-6">
+        <div className="mx-auto max-w-6xl px-5 pt-8 pb-16 sm:px-6 sm:pt-10 sm:pb-20">
           <div className="flex items-center justify-between gap-4">
             <h2
               id="gallery-title"
