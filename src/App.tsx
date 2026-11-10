@@ -14,8 +14,8 @@ import {
   THEME_STORAGE_KEY,
 } from './theme';
 import { GameSettings, ThemeConfig } from './types';
-import { ModelKey } from './components/ModelPickerButton';
-import { recordGeneration } from './utils/neurons';
+import { AI_MODELS, DAILY_BUDGET, ModelKey } from './components/ModelPickerButton';
+import { loadTelemetry, recordGeneration } from './utils/neurons';
 
 type GameState = 'home' | 'playing' | 'completed';
 
@@ -145,6 +145,14 @@ const App: React.FC = () => {
       return;
     }
 
+    const currentTelemetry = loadTelemetry();
+    const activeModel = AI_MODELS[selectedModel] ?? AI_MODELS['klein-4b'];
+    const remaining = Math.max(0, DAILY_BUDGET - currentTelemetry.totalNeurons);
+    if (remaining < activeModel.cost) {
+      setError('Daily generation quota reached. Quota resets daily at midnight UTC.');
+      return;
+    }
+
     setError(null);
     setIsGenerating(true);
 
@@ -245,7 +253,7 @@ const App: React.FC = () => {
     <div className="flex h-full flex-col bg-canvas text-ink">
       <header className="relative z-30 shrink-0 border-b border-line bg-canvas/85 backdrop-blur-xl">
         <div className="mx-auto grid h-16 w-full max-w-[1600px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-2.5 sm:gap-3 sm:px-5">
-          <div className="flex items-center gap-2 sm:gap-3.5 justify-self-start min-w-0">
+          <div className="flex h-full w-full items-center min-w-0">
             <button
               type="button"
               onClick={resetGame}
@@ -256,22 +264,24 @@ const App: React.FC = () => {
             </button>
 
             {showGameplayHeader && (
-              <div className="relative flex flex-col items-center justify-center shrink-0">
-                <div className="h-1.5 w-12 sm:w-20 md:w-28 overflow-hidden rounded-full bg-panel-2">
-                  <div
-                    className="h-full bg-accent transition-[width] duration-300 ease-out"
-                    style={{ width: `${completionPercent}%` }}
-                  />
+              <div className="flex flex-1 items-center justify-center min-w-0 px-2 sm:px-4">
+                <div className="relative flex flex-col items-center justify-center shrink-0">
+                  <div className="h-1.5 w-12 sm:w-20 md:w-28 overflow-hidden rounded-full bg-panel-2">
+                    <div
+                      className="h-full bg-accent transition-[width] duration-300 ease-out"
+                      style={{ width: `${completionPercent}%` }}
+                    />
+                  </div>
+                  <span className="absolute top-[calc(100%+2px)] text-[9px] sm:text-[10px] font-semibold tabular-nums text-muted/80">
+                    {completionPercent}%
+                  </span>
                 </div>
-                <span className="absolute top-[calc(100%+2px)] text-[9px] sm:text-[10px] font-semibold tabular-nums text-muted/80">
-                  {completionPercent}%
-                </span>
               </div>
             )}
           </div>
 
           <div
-            className={`min-w-0 justify-self-center transition-opacity duration-300 ${
+            className={`min-w-0 justify-self-center flex items-center justify-center transition-opacity duration-300 w-[270px] sm:w-[428px] md:w-[492px] ${
               gameState === 'home' ? 'invisible opacity-0' : 'opacity-100'
             }`}
           >

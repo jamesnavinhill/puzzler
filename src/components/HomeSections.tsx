@@ -1,8 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import FileUpload from './FileUpload';
 import BrandMark from './BrandMark';
 import { BRAND_ASSETS } from '../data/brand';
-import { ModelKey, ModelPickerButton } from './ModelPickerButton';
+import { AI_MODELS, DAILY_BUDGET, ModelKey, ModelPickerButton } from './ModelPickerButton';
+import { loadTelemetry, TELEMETRY_EVENT } from '../utils/neurons';
 import { GalleryImage, galleryImages } from '../data/gallery.generated';
 
 interface HomeSectionsProps {
@@ -31,7 +32,23 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
   onSelectedModelChange,
 }) => {
   const [gallerySource, setGallerySource] = useState<'nh' | 'globe'>('nh');
+  const [telemetry, setTelemetry] = useState(loadTelemetry);
   const gallerySectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const handleUpdate = () => setTelemetry(loadTelemetry());
+    window.addEventListener(TELEMETRY_EVENT, handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener(TELEMETRY_EVENT, handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
+  const activeModel = AI_MODELS[selectedModel] ?? AI_MODELS['klein-4b'];
+  const remainingBudget = Math.max(0, DAILY_BUDGET - telemetry.totalNeurons);
+  const gensLeft = Math.floor(remainingBudget / activeModel.cost);
+  const isOutOfGenerations = gensLeft <= 0;
 
   const handleScrollToGallery = (event: React.MouseEvent) => {
     event.preventDefault();
@@ -117,7 +134,12 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                   <button
                     type="button"
                     onClick={onGenerateAi}
-                    disabled={!aiPrompt.trim() || isGenerating}
+                    disabled={!aiPrompt.trim() || isGenerating || isOutOfGenerations}
+                    title={
+                      isOutOfGenerations
+                        ? 'Daily free quota reached (resets at midnight UTC)'
+                        : undefined
+                    }
                     className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 text-xs sm:text-sm font-bold text-on-accent transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40 shadow-sm"
                   >
                     {isGenerating ? (
@@ -125,6 +147,8 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                         <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-on-accent/30 border-t-on-accent" />
                         Making…
                       </>
+                    ) : isOutOfGenerations ? (
+                      'Quota reached'
                     ) : (
                       'Generate'
                     )}

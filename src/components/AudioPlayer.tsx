@@ -242,14 +242,38 @@ const AudioPlayer: React.FC = () => {
             setIsExpanded(false);
           }, 600);
         }}
-        className="group/player relative flex items-center rounded-full border border-black/15 bg-black/[0.08] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(0,0,0,0.06)] dark:border-white/[0.07] dark:bg-black/50 dark:shadow-[inset_0_2px_4.5px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(0,0,0,0.25)] p-1 transition-all duration-300"
+        className="group/player relative flex items-center justify-center rounded-full border border-black/15 bg-black/[0.08] shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(0,0,0,0.06)] dark:border-white/[0.07] dark:bg-black/50 dark:shadow-[inset_0_2px_4.5px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(0,0,0,0.25)] p-1 transition-all duration-300"
       >
-        {/* Album / Track Section (collapsed to playlist icon) */}
-        <div className="flex items-center min-w-0">
+        {/* Left Wing: Album / Track Section (symmetric width, extends outward to the left) */}
+        <div
+          className={`flex items-center justify-end overflow-hidden transition-[width] duration-300 ease-in-out ${
+            isExpanded ? 'w-28 sm:w-40 md:w-48' : 'w-8 sm:w-8.5'
+          }`}
+        >
+          <div
+            className={`flex-1 min-w-0 pr-1.5 transition-opacity duration-300 ${
+              isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => setShowQueue(true)}
+              className="flex flex-col items-start justify-center text-left min-w-0 w-full pl-2"
+              title="Open playlist"
+            >
+              <span className="block w-full truncate text-[11px] font-semibold leading-tight text-ink transition-colors hover:text-accent">
+                {displayTitle}
+              </span>
+              <span className="mt-0.5 block w-full truncate text-[10px] leading-tight text-muted transition-colors hover:text-ink">
+                {currentTrack.album}
+              </span>
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => setShowQueue((open) => !open)}
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition-colors hover:text-ink focus:outline-none"
+            className="grid h-8 w-8 sm:h-8.5 sm:w-8.5 shrink-0 place-items-center rounded-full text-muted transition-colors hover:text-ink focus:outline-none"
             aria-label="Open Navin Hill playlist"
             aria-expanded={showQueue}
             aria-haspopup="dialog"
@@ -270,31 +294,9 @@ const AudioPlayer: React.FC = () => {
               />
             </svg>
           </button>
-
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              isExpanded
-                ? 'max-w-[7.5rem] sm:max-w-[11rem] md:max-w-[13rem] opacity-100 pl-1 pr-2'
-                : 'max-w-0 opacity-0 p-0 pointer-events-none'
-            }`}
-          >
-            <button
-              type="button"
-              onClick={() => setShowQueue(true)}
-              className="group/text flex flex-col items-start text-left min-w-0 w-full"
-              title="Open playlist"
-            >
-              <span className="block w-full truncate text-[11px] font-semibold leading-tight text-ink transition-colors group-hover/text:text-accent">
-                {displayTitle}
-              </span>
-              <span className="mt-0.5 block w-full truncate text-[10px] leading-tight text-muted transition-colors group-hover/text:text-ink">
-                {currentTrack.album}
-              </span>
-            </button>
-          </div>
         </div>
 
-        {/* Center transport controls */}
+        {/* Center transport controls (play button is centered, never moves) */}
         <div className="flex shrink-0 items-center justify-center gap-0.5 px-0.5">
           <button
             type="button"
@@ -341,8 +343,12 @@ const AudioPlayer: React.FC = () => {
           </button>
         </div>
 
-        {/* Volume Section (collapsed to volume icon) */}
-        <div className="flex items-center min-w-0">
+        {/* Right Wing: Volume Section (exact same width as Left Wing, extends outward to the right) */}
+        <div
+          className={`flex items-center justify-start overflow-hidden transition-[width] duration-300 ease-in-out ${
+            isExpanded ? 'w-28 sm:w-40 md:w-48' : 'w-8 sm:w-8.5'
+          }`}
+        >
           <button
             type="button"
             onClick={() => {
@@ -351,7 +357,7 @@ const AudioPlayer: React.FC = () => {
             }}
             aria-label={volume === 0 ? 'Unmute music' : 'Mute music'}
             title={volume === 0 ? 'Unmute' : 'Mute'}
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition-colors hover:text-ink focus:outline-none"
+            className="grid h-8 w-8 sm:h-8.5 sm:w-8.5 shrink-0 place-items-center rounded-full text-muted transition-colors hover:text-ink focus:outline-none"
           >
             <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M14 3.23v17.54a1 1 0 01-1.64.77L6.73 17H3a1 1 0 01-1-1v-8a1 1 0 011-1h3.73l5.63-4.54A1 1 0 0114 3.23zM17.54 8.46a1 1 0 10-1.41 1.41 3 3 0 010 4.24 1 1 0 001.41 1.41 5 5 0 000-7.06z" />
@@ -359,10 +365,8 @@ const AudioPlayer: React.FC = () => {
           </button>
 
           <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              isExpanded
-                ? 'max-w-[4.5rem] sm:max-w-[5.5rem] opacity-100 pr-2 pl-0.5'
-                : 'max-w-0 opacity-0 p-0 pointer-events-none'
+            className={`flex-1 min-w-0 pl-1.5 pr-2.5 transition-opacity duration-300 ${
+              isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
             <input
@@ -373,7 +377,7 @@ const AudioPlayer: React.FC = () => {
               value={volume}
               onChange={(event) => setVolume(Number(event.target.value))}
               aria-label="Music volume"
-              className="volume-range h-1 w-12 sm:w-16 cursor-pointer appearance-none rounded-full"
+              className="volume-range h-1 w-full cursor-pointer appearance-none rounded-full"
               style={{
                 background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
                   volume * 100
