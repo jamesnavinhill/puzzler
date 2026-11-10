@@ -49,7 +49,6 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
 }) => {
   const [telemetry, setTelemetry] = useState<GenerationTelemetry>(loadTelemetry);
   const [isOpen, setIsOpen] = useState(false);
-  const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
   const [align, setAlign] = useState<'left' | 'right'>('left');
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -69,17 +68,6 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
   const handleOpenToggle = () => {
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const popoverHeight = 180;
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-
-      // Naturally open upward if near the bottom of the viewport
-      if (spaceBelow < popoverHeight && spaceAbove > spaceBelow) {
-        setPlacement('top');
-      } else {
-        setPlacement('bottom');
-      }
-
       // Check horizontal boundary: if button is near right viewport edge, align right
       if (rect.left + 288 > window.innerWidth - 16) {
         setAlign('right');
@@ -123,11 +111,11 @@ export const ModelPickerButton: React.FC<ModelPickerButtonProps> = ({
             aria-hidden="true"
           />
 
-          {/* Naturally anchored popover */}
+          {/* Popover anchored naturally above the button */}
           <div
-            className={`absolute z-50 w-72 rounded-2xl border border-line/80 bg-panel p-3.5 shadow-2xl backdrop-blur-md transition-all animate-fade-in ${
-              placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
-            } ${align === 'right' ? 'right-0' : 'left-0'}`}
+            className={`absolute bottom-full mb-2.5 z-50 w-72 rounded-2xl border border-line/80 bg-panel p-3.5 shadow-2xl backdrop-blur-md transition-all animate-fade-in ${
+              align === 'right' ? 'right-0' : 'left-0'
+            }`}
           >
             {/* Model details */}
             <div className="space-y-1 text-xs">
