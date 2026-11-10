@@ -17,7 +17,6 @@ const PIECE_COUNTS = [25, 100, 250];
 
 const REVEAL =
   'opacity-0 transition-opacity duration-200 max-md:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100';
-const REVEAL_INTERACTIVE = `${REVEAL} pointer-events-none max-md:pointer-events-auto group-hover:pointer-events-auto group-focus-within:pointer-events-auto [@media(hover:none)]:pointer-events-auto`;
 
 const normalize = (value: number) =>
   ((value % galleryImages.length) + galleryImages.length) % galleryImages.length;
@@ -237,13 +236,13 @@ const GalleryHero: React.FC<GalleryHeroProps> = ({ index, onIndexChange, onStart
                     />
 
                     <div
-                      className={`absolute inset-x-0 top-0 z-30 flex justify-center px-3 pt-3 sm:pt-4 ${REVEAL_INTERACTIVE}`}
+                      className="absolute inset-x-0 top-0 z-30 flex justify-center px-3 pt-3 sm:pt-4"
                       onPointerDown={stopDrag}
                     >
                       <div
                         role="group"
                         aria-label="Puzzle size"
-                        className="flex w-[var(--control-pill-w)] items-center gap-0.5 rounded-full border border-white/15 bg-black/35 p-1 backdrop-blur-md"
+                        className="flex w-[var(--control-pill-w)] items-center gap-0.5 rounded-full border border-white/15 bg-black/75 p-1 backdrop-blur-md"
                       >
                         {PIECE_COUNTS.map((count) => {
                           const isSelected = selectedPieces === count;

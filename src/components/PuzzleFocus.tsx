@@ -102,7 +102,7 @@ const PuzzleFocus: React.FC<PuzzleFocusProps> = ({ src, alt, onClose, onStart })
             <div
               role="group"
               aria-label="Puzzle size"
-              className="flex w-[var(--control-pill-w)] items-center gap-0.5 rounded-full border border-white/15 bg-black/35 p-1 backdrop-blur-md"
+              className="flex w-[var(--control-pill-w)] items-center gap-0.5 rounded-full border border-white/15 bg-black/75 p-1 backdrop-blur-md"
             >
               {PIECE_COUNTS.map((count) => {
                 const isSelected = selectedPieces === count;
