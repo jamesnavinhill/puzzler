@@ -64,6 +64,17 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
       {/* Cards section (no divider above, space between 1-2-3 preserved, bottom expanded) */}
       <section aria-label="Image creation options">
         <div className="mx-auto max-w-6xl px-5 pt-16 pb-12 sm:px-6 sm:pt-20 sm:pb-14">
+          <h3 className="text-center text-xl sm:text-2xl font-semibold tracking-[-0.03em] text-ink mb-8 sm:mb-10">
+            Upload your own, generate with AI, or choose from the{' '}
+            <a
+              href="#gallery-section"
+              onClick={handleScrollToGallery}
+              className="text-accent transition-colors hover:brightness-110 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              Gallery
+            </a>
+          </h3>
+
           <div className="mx-auto flex flex-col sm:flex-row items-stretch justify-center gap-5 sm:gap-6 max-w-3xl">
             {/* Card 1: Upload an image */}
             <div className="flex h-[17rem] w-full sm:w-[13.5rem] shrink-0 flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
@@ -122,17 +133,6 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
               </div>
             </div>
           </div>
-
-          <h3 className="mt-8 sm:mt-10 text-center text-xl sm:text-2xl font-semibold tracking-[-0.03em] text-ink">
-            Upload your own, generate with AI, or choose from the{' '}
-            <a
-              href="#gallery-section"
-              onClick={handleScrollToGallery}
-              className="text-accent transition-colors hover:brightness-110 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              Gallery
-            </a>
-          </h3>
         </div>
       </section>
 
