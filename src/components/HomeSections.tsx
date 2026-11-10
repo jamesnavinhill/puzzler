@@ -64,33 +64,17 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
       {/* Cards section (no divider above, space between 1-2-3 preserved, bottom expanded) */}
       <section aria-label="Image creation options">
         <div className="mx-auto max-w-6xl px-5 pt-16 pb-12 sm:px-6 sm:pt-20 sm:pb-14">
-          <h3 className="text-center text-xl sm:text-2xl font-semibold tracking-[-0.03em] text-ink mb-8 sm:mb-10">
-            Upload your own, generate with AI, or choose from the{' '}
-            <a
-              href="#gallery-section"
-              onClick={handleScrollToGallery}
-              className="text-accent underline underline-offset-4 decoration-accent/40 transition-colors hover:decoration-accent hover:brightness-110 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              Gallery
-            </a>
-          </h3>
-
           <div className="mx-auto flex flex-col sm:flex-row items-stretch justify-center gap-5 sm:gap-6 max-w-3xl">
-            {/* Card 1: Upload an image (reduced container width to meet the 2:3 skeleton padding) */}
+            {/* Card 1: Upload an image */}
             <div className="flex h-[17rem] w-full sm:w-[13.5rem] shrink-0 flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
-              <div className="flex flex-1 flex-col items-center justify-center">
-                {isProcessing ? (
-                  <div className="flex h-36 w-24 flex-col items-center justify-center gap-2 rounded-xl border-2 border-line/60 bg-canvas/30 text-center">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" />
-                    <span className="text-[10px] font-medium text-muted">Preparing…</span>
-                  </div>
-                ) : (
-                  <FileUpload onImageSelect={onImageSelect} />
-                )}
-                <p className="mt-2.5 text-center text-[11px] text-muted/60 whitespace-nowrap">
-                  PNG, JPEG, WebP · 15MB
-                </p>
-              </div>
+              {isProcessing ? (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line/60 bg-canvas/30 text-center">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" />
+                  <span className="text-[10px] font-medium text-muted">Preparing…</span>
+                </div>
+              ) : (
+                <FileUpload onImageSelect={onImageSelect} />
+              )}
             </div>
 
             {/* Card 2: Generate an Image */}
@@ -138,6 +122,17 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
               </div>
             </div>
           </div>
+
+          <h3 className="mt-8 sm:mt-10 text-center text-xl sm:text-2xl font-semibold tracking-[-0.03em] text-ink">
+            Upload your own, generate with AI, or choose from the{' '}
+            <a
+              href="#gallery-section"
+              onClick={handleScrollToGallery}
+              className="text-accent transition-colors hover:brightness-110 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              Gallery
+            </a>
+          </h3>
         </div>
       </section>
 
@@ -147,7 +142,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
           <div className="flex items-center justify-between gap-4">
             <h2
               id="gallery-title"
-              className="text-2xl font-semibold tracking-[-0.03em] text-ink sm:text-3xl"
+              className="text-2xl font-semibold tracking-[-0.03em] text-accent sm:text-3xl"
             >
               Gallery
             </h2>
