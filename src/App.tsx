@@ -260,19 +260,19 @@ const App: React.FC = () => {
               className="group flex shrink-0 items-center rounded-xl text-left"
               aria-label="Puzzled home"
             >
-              <BrandMark className="h-6.5 w-auto sm:h-8" />
+              <BrandMark className="h-5 w-auto sm:h-8" />
             </button>
 
             {showGameplayHeader && (
               <div className="flex flex-1 items-center justify-center min-w-0 px-2 sm:px-4">
                 <div className="relative flex flex-col items-center justify-center shrink-0">
-                  <div className="h-1.5 w-12 sm:w-20 md:w-28 overflow-hidden rounded-full bg-panel-2">
+                  <div className="h-1 w-8 sm:h-1.5 sm:w-20 md:w-28 overflow-hidden rounded-full bg-panel-2">
                     <div
                       className="h-full bg-accent transition-[width] duration-300 ease-out"
                       style={{ width: `${completionPercent}%` }}
                     />
                   </div>
-                  <span className="absolute top-[calc(100%+2px)] text-[9px] sm:text-[10px] font-semibold tabular-nums text-muted/80">
+                  <span className="absolute top-[calc(100%+2px)] text-[8px] sm:text-[10px] font-semibold tabular-nums text-muted/80">
                     {completionPercent}%
                   </span>
                 </div>
@@ -281,7 +281,7 @@ const App: React.FC = () => {
           </div>
 
           <div
-            className={`min-w-0 justify-self-center flex items-center justify-center transition-opacity duration-300 w-[270px] sm:w-[428px] md:w-[492px] ${
+            className={`min-w-0 justify-self-center flex items-center justify-center transition-opacity duration-300 w-[168px] sm:w-[428px] md:w-[492px] ${
               gameState === 'home' ? 'invisible opacity-0' : 'opacity-100'
             }`}
           >

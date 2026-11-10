@@ -144,7 +144,10 @@
 
 @media (max-width: 767px) {
   :root {
-    --hero-card-scale: 1;
+    /* Slightly under full width on mobile so one neighbouring card
+       peeks in on each side of the coverflow, while the active card
+       stays the focal point. */
+    --hero-card-scale: 0.85;
   }
 }
 

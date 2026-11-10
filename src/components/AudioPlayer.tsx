@@ -247,7 +247,7 @@ const AudioPlayer: React.FC = () => {
         {/* Left Wing: Album / Track Section (symmetric width, extends outward to the left) */}
         <div
           className={`flex items-center justify-end overflow-hidden transition-[width] duration-300 ease-in-out ${
-            isExpanded ? 'w-28 sm:w-40 md:w-48' : 'w-8 sm:w-8.5'
+            isExpanded ? 'w-20 sm:w-40 md:w-48' : 'w-8 sm:w-8.5'
           }`}
         >
           <div
@@ -346,7 +346,7 @@ const AudioPlayer: React.FC = () => {
         {/* Right Wing: Volume Section (exact same width as Left Wing, extends outward to the right) */}
         <div
           className={`flex items-center justify-start overflow-hidden transition-[width] duration-300 ease-in-out ${
-            isExpanded ? 'w-28 sm:w-40 md:w-48' : 'w-8 sm:w-8.5'
+            isExpanded ? 'w-20 sm:w-40 md:w-48' : 'w-8 sm:w-8.5'
           }`}
         >
           <button

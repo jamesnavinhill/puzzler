@@ -94,7 +94,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
 
           <div className="mx-auto flex flex-col sm:flex-row items-stretch justify-center gap-5 sm:gap-6 max-w-3xl">
             {/* Card 1: Upload an image */}
-            <div className="flex h-[17rem] w-full sm:w-[13.5rem] shrink-0 flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+            <div className="flex h-44 w-full sm:h-[17rem] sm:w-[13.5rem] shrink-0 flex-col rounded-2xl border border-line/80 bg-panel/50 p-5 sm:p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
               {isProcessing ? (
                 <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line/60 bg-canvas/30 text-center">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" />
@@ -106,7 +106,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
             </div>
 
             {/* Card 2: Generate an Image */}
-            <div className="flex h-[17rem] flex-1 flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+            <div className="flex h-[17rem] flex-col sm:flex-1 rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
               <div className="flex flex-1 flex-col justify-between gap-3">
                 <label htmlFor="ai-prompt" className="sr-only">
                   Describe the image to generate
