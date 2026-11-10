@@ -52,6 +52,7 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
     anchorWorld: { x: number; y: number };
   } | null>(null);
   const pinchedRef = useRef(false);
+  const transformRef = useRef(transform);
 
   const [status, setStatus] = useState<
     'loading_image' | 'waiting_for_layout' | 'generating' | 'ready' | 'error'
@@ -563,25 +564,13 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
 
     if (activeTouchesRef.current.size === 2) {
       // Second finger down: whatever the first finger was doing (dragging a
-      // piece, panning) is cancelled where it stands, and the gesture
-      // becomes a pinch from here.
+      // piece, panning) is cancelled where it stands. The pinch itself is
+      // run by the native listeners below, which can preventDefault — React
+      // attaches its touch listeners passively, so a React-side pinch can
+      // be taken over (touchcancel) by the browser's own pinch gesture.
       setDraggedPieceId(null);
       setIsPanning(false);
       pinchedRef.current = true;
-
-      const [first, second] = [...activeTouchesRef.current.values()];
-      const midpoint = {
-        x: (first.x + second.x) / 2,
-        y: (first.y + second.y) / 2,
-      };
-      pinchRef.current = {
-        startDistance: Math.max(
-          1,
-          Math.hypot(first.x - second.x, first.y - second.y)
-        ),
-        startScale: transform.scale,
-        anchorWorld: toWorld(midpoint.x, midpoint.y),
-      };
       return;
     }
 
@@ -593,9 +582,70 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
   const handleTouchMove = (event: React.TouchEvent) => {
     trackTouches(event.touches);
 
-    const pinch = pinchRef.current;
-    if (pinch && activeTouchesRef.current.size === 2) {
-      const [first, second] = [...activeTouchesRef.current.values()];
+    if (pinchRef.current) {
+      // Pinch in progress: the native listeners own it.
+      return;
+    }
+
+    if (!pinchedRef.current && activeTouchesRef.current.size === 1) {
+      handlePointerMove(event);
+    }
+  };
+
+  // Native pinch handling, attached directly to the canvas as non-passive
+  // listeners so two-finger moves can be preventDefaulted — that is what
+  // stops the browser from claiming the gesture (and firing touchcancel)
+  // on real devices.
+  useEffect(() => {
+    transformRef.current = transform;
+  }, [transform]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      return;
+    }
+
+    const point = (touch: Touch) => {
+      const rect = canvas.getBoundingClientRect();
+      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+    };
+
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 2) {
+        return;
+      }
+      event.preventDefault();
+
+      const first = point(event.touches[0]);
+      const second = point(event.touches[1]);
+      const midpoint = {
+        x: (first.x + second.x) / 2,
+        y: (first.y + second.y) / 2,
+      };
+      const current = transformRef.current;
+      pinchRef.current = {
+        startDistance: Math.max(
+          1,
+          Math.hypot(first.x - second.x, first.y - second.y)
+        ),
+        startScale: current.scale,
+        anchorWorld: {
+          x: (midpoint.x - current.x) / current.scale,
+          y: (midpoint.y - current.y) / current.scale,
+        },
+      };
+    };
+
+    const onTouchMove = (event: TouchEvent) => {
+      const pinch = pinchRef.current;
+      if (!pinch || event.touches.length !== 2) {
+        return;
+      }
+      event.preventDefault();
+
+      const first = point(event.touches[0]);
+      const second = point(event.touches[1]);
       const distance = Math.max(
         1,
         Math.hypot(first.x - second.x, first.y - second.y)
@@ -614,13 +664,25 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
         x: midpoint.x - pinch.anchorWorld.x * scale,
         y: midpoint.y - pinch.anchorWorld.y * scale,
       });
-      return;
-    }
+    };
 
-    if (!pinchedRef.current && activeTouchesRef.current.size === 1) {
-      handlePointerMove(event);
-    }
-  };
+    const onTouchEnd = (event: TouchEvent) => {
+      if (event.touches.length < 2) {
+        pinchRef.current = null;
+      }
+    };
+
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onTouchEnd);
+    canvas.addEventListener('touchcancel', onTouchEnd);
+    return () => {
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove', onTouchMove);
+      canvas.removeEventListener('touchend', onTouchEnd);
+      canvas.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, []);
 
   const handleTouchEnd = (event: React.TouchEvent) => {
     for (let i = 0; i < event.changedTouches.length; i += 1) {
@@ -691,7 +753,7 @@ const PuzzleCanvas: React.FC<PuzzleCanvasProps> = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
-        className="block h-full w-full cursor-crosshair"
+        className="block h-full w-full cursor-crosshair touch-none"
       />
 
       {status === 'ready' && (
