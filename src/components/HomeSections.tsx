@@ -34,11 +34,11 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
 
   return (
     <div className="relative z-10">
-      {/* Spacer below hero and above the divider */}
+      {/* Space between 1-2-3 and bottom of hero is identical to previous hero-to-divider space */}
       <div className="h-32 sm:h-40" aria-hidden="true" />
 
-      <section className="border-t border-line/70" aria-label="How it works">
-        <div className="mx-auto max-w-6xl px-5 pt-32 pb-16 sm:pt-40 sm:pb-20">
+      <section aria-label="How it works">
+        <div className="mx-auto max-w-6xl px-5">
           <h2
             id="create-title"
             className="flex flex-wrap items-baseline justify-center gap-x-8 gap-y-3 text-center text-[clamp(1.5rem,3.6vw,2.4rem)] font-bold leading-tight tracking-[-0.035em] text-ink sm:gap-x-12"
@@ -58,14 +58,14 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
       {/* Cards section (no divider above, space between 1-2-3 preserved, bottom expanded) */}
       <section aria-label="Image creation options">
         <div className="mx-auto max-w-6xl px-5 pt-16 pb-24 sm:px-6 sm:pt-20 sm:pb-28">
+          <h3 className="text-center text-xl sm:text-2xl font-semibold tracking-[-0.03em] text-ink mb-8 sm:mb-10">
+            Upload your own, Generate with AI, Choose from the Gallery
+          </h3>
+
           <div className="mx-auto flex flex-col sm:flex-row items-stretch justify-center gap-5 sm:gap-6 max-w-3xl">
             {/* Card 1: Upload an image (reduced container width to meet the 2:3 skeleton padding) */}
-            <div className="flex h-[17rem] w-full sm:w-[13.5rem] shrink-0 flex-col justify-between rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
-              <h3 className="h-6 text-center text-sm font-semibold tracking-[-0.015em] text-ink whitespace-nowrap">
-                Upload an image
-              </h3>
-
-              <div className="mt-3.5 flex flex-1 flex-col items-center justify-center">
+            <div className="flex h-[17rem] w-full sm:w-[13.5rem] shrink-0 flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+              <div className="flex flex-1 flex-col items-center justify-center">
                 {isProcessing ? (
                   <div className="flex h-36 w-24 flex-col items-center justify-center gap-2 rounded-xl border-2 border-line/60 bg-canvas/30 text-center">
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" />
@@ -81,12 +81,8 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
             </div>
 
             {/* Card 2: Generate an Image */}
-            <div className="flex h-[17rem] flex-1 flex-col justify-between rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
-              <h3 className="h-6 text-center text-sm font-semibold tracking-[-0.015em] text-ink">
-                Generate an Image
-              </h3>
-
-              <div className="mt-3.5 flex flex-1 flex-col justify-between">
+            <div className="flex h-[17rem] flex-1 flex-col rounded-2xl border border-line/80 bg-panel/50 p-6 shadow-sm backdrop-blur-sm transition-colors hover:border-line">
+              <div className="flex flex-1 flex-col justify-between gap-3">
                 <label htmlFor="ai-prompt" className="sr-only">
                   Describe the image to generate
                 </label>
@@ -102,7 +98,7 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
                     }
                   }}
                   placeholder="A greenhouse on a winter night…"
-                  className="h-32 w-full resize-none rounded-xl border border-line/80 bg-canvas/40 p-3 text-xs sm:text-sm leading-relaxed text-ink placeholder:text-muted/40 focus:border-accent/70 focus:bg-canvas/60 focus:outline-none transition-colors"
+                  className="w-full flex-1 resize-none rounded-xl border border-line/80 bg-canvas/40 p-3 text-xs sm:text-sm leading-relaxed text-ink placeholder:text-muted/40 focus:border-accent/70 focus:bg-canvas/60 focus:outline-none transition-colors"
                 />
 
                 <div className="flex h-11 items-center gap-2.5">
@@ -132,8 +128,8 @@ const HomeSections: React.FC<HomeSectionsProps> = ({
         </div>
       </section>
 
-      {/* Gallery section with divider line underneath the cards */}
-      <section className="border-t border-line/70" aria-labelledby="gallery-title">
+      {/* Gallery section (no divider line underneath the cards) */}
+      <section aria-labelledby="gallery-title">
         <div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 sm:py-20">
           <div className="flex items-center justify-between gap-4">
             <h2

@@ -309,7 +309,7 @@ const App: React.FC = () => {
               onClick={() =>
                 setTheme((current) => ({ ...current, isDark: !current.isDark }))
               }
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-panel-2 hover:text-accent sm:h-9 sm:w-9"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted transition-colors hover:text-accent active:text-accent focus:outline-none focus-visible:outline-none focus-visible:text-accent sm:h-9 sm:w-9"
               aria-label={theme.isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme.isDark ? (
