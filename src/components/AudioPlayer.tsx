@@ -365,7 +365,7 @@ const AudioPlayer: React.FC = () => {
           </button>
 
           <div
-            className={`flex-1 min-w-0 pl-1.5 pr-2.5 transition-opacity duration-300 ${
+            className={`flex h-8 flex-1 items-center min-w-0 pl-1.5 pr-2.5 transition-opacity duration-300 sm:h-8.5 ${
               isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
@@ -377,7 +377,7 @@ const AudioPlayer: React.FC = () => {
               value={volume}
               onChange={(event) => setVolume(Number(event.target.value))}
               aria-label="Music volume"
-              className="volume-range h-1 w-full cursor-pointer appearance-none rounded-full"
+              className="volume-range block h-1 w-full cursor-pointer appearance-none rounded-full"
               style={{
                 background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
                   volume * 100
